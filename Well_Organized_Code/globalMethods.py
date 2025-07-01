@@ -40,11 +40,11 @@ def output_results(vqte_results, exact_diag_results, time, nt, eps, mu, T, time_
     # Plot VQTE results
     plt.plot(np.linspace(0, time, nt), trace_list, label='Trace of Density Matrix')
     plt.plot(np.linspace(0, time, nt), [1 / (1 + np.exp((eps - mu) / T))] * nt, label='Steady State Expectation Value', linestyle='solid')
-    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='dashed')
+    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
     # Plot Exact results
     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
-    plt.plot(np.linspace(0, time, nt)/2, vqte_results,marker='', linestyle='..', label='VQTE Result', color='green')
-    plt.title("Comparison of VQTE and Exact Time Evolution 🎯")
+    plt.plot(np.linspace(0, time, nt)/2, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
+    plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
     plt.grid(True)
