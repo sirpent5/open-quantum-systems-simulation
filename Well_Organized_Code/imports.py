@@ -1,4 +1,5 @@
 #Imports
+print("--- 1. Starting to run imports.py ---")
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy  

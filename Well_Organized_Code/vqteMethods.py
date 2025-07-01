@@ -1,5 +1,8 @@
 
+# from qiskit.quantum_info import SparsePauliOp
+# import numpy as np
 from imports import *
+print("Imports loaded successfully.")
 def hamiltonian_generation(eps, gamma, mu, T):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
@@ -41,3 +44,54 @@ def statevector_to_densitymatrix(v):
     """
     m = int(np.sqrt(len(v)))
     return np.reshape(v, (m, m), order='F')
+
+def build_initial_states(ham_real):
+    ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+    init_param_values = {}
+    for i in range(len(ansatz.parameters)):
+        init_param_values[ansatz.parameters[i]] = (
+        2*np.pi
+    )  # initialize the parameters which also decide the initial state
+    init_state = Statevector(ansatz.assign_parameters(init_param_values))
+
+
+# Get the statevector's data as a NumPy array
+#Convert initial state to exact diagonalization format
+    psi_vector = init_state.data
+    rho_matrix = psi_vector.reshape(2 ,2, order='F')
+
+
+    initial_state = np.matrix(rho_matrix)
+    return init_state, initial_state, ansatz
+
+def perform_vqte():
+    real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
+imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
+
+
+# Initialize lists to store results
+#second is the is expectation value of the number operator
+trace_list = [1.0]
+num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
+print("Initial expectation value of number operator using VQE:", num_op_list[0])
+
+
+# Perform time evolution
+for t in range(1, nt):
+    # Real evolution
+    evolution_problem = TimeEvolutionProblem(ham_real, dt / 2)
+    var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
+    evolution_result_re = var_qrte.evolve(evolution_problem)
+    init_param_values = evolution_result_re.parameter_values[-1]
+    
+    # Imaginary evolution
+    evolution_problem = TimeEvolutionProblem(ham_imag, dt / 2)
+    var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
+    evolution_result_im = var_qite.evolve(evolution_problem)
+    init_param_values = evolution_result_im.parameter_values[-1]
+    
+    # Calculate the trace and expectation value of the number operator
+    trace = np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data))
+    trace_list.append(1.0) # Normalized so the trace is always 1
+    num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
+    #Stop
