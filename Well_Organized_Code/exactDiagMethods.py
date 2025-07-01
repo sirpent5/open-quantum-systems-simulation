@@ -1,5 +1,10 @@
 
 #Functions from article:
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy  
+from scipy.linalg import null_space
+
 def Liouvillian(H, Ls, hbar = 1):
     d = len(H) # dimension of the system
     superH = -1j/hbar * ( np.kron(np.eye(d),H)-np.kron(H.T,np.eye(d)) ) # Hamiltonian part

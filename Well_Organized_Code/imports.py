@@ -8,4 +8,4 @@ from qiskit.quantum_info import Statevector
 from qiskit_algorithms.time_evolvers.variational import RealMcLachlanPrinciple, ImaginaryMcLachlanPrinciple
 from qiskit_algorithms import TimeEvolutionProblem, VarQRTE, VarQITE
 from qiskit_algorithms.gradients import ReverseEstimatorGradient, ReverseQGT, DerivativeType
-import matplotlib.pyplot as plt
+from qiskit.quantum_info import SparsePauliOp
