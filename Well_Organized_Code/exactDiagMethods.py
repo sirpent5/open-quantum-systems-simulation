@@ -71,15 +71,20 @@ def perform_exact_diag(eps, gamma, F, dt, nt, initial_state):
 
 def build_exact_diag_hamiltonian():
     print("Gonna do it one day")
-def output_results(vtqe_results, exact_diag_results, time, nt, eps, mu, T, num_op_list, trace_list, expectation_value_history,time_points):
-    plt.plot(np.linspace(0, time, nt), trace_list, label='Trace of Density Matrix')
-    plt.plot(np.linspace(0, time, nt), num_op_list, label='Expectation Value of Number Operator VQE')
+def output_results(vqte_results, exact_diag_results, time, nt, eps, mu, T):
+    plt.figure(figsize=(10, 6))
+    
+    # Plot VQTE results
+    plt.plot(np.linspace(0, time, nt), vqte_results, marker='o', linestyle='-', label='VQTE Result')
     plt.plot(np.linspace(0, time, nt), [1 / (1 + np.exp((eps - mu) / T))] * nt, label='Steady State Expectation Value', linestyle='--')
-    plt.plot(time_points, expectation_value_history, label='Expectation Value Exact Diagonalization')
-    # plt.axhline(y=referenceN, color='r', linestyle='--', label='Reference')
-    plt.xlabel('Time')
-    plt.ylabel('Value')
-    plt.title('Time Evolution of Density Matrix and Number Operator')
+
+    # Plot Exact results
+    plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
+    
+    plt.title("Comparison of VQTE and Exact Time Evolution 🎯")
+    plt.xlabel("Time (t)")
+    plt.ylabel("⟨n⟩ (Expectation Value)")
+    plt.grid(True)
     plt.legend()
-    plt.grid()
+    
     plt.show()
