@@ -1,9 +1,5 @@
-
-#Functions from article:
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy  
-from scipy.linalg import null_space
+from imports import *
+from defs import numberop, Sigma_minus, Sigma_plus, Sigma_x, Sigma_y, Sigma_z
 
 def Liouvillian(H, Ls, hbar = 1):
     d = len(H) # dimension of the system
@@ -34,8 +30,56 @@ def verify_density_matrix(rho):
 
 
 
-def perform_exact_diag():
-    print("Yuh")
+def perform_exact_diag(eps, gamma, F, dt, nt, initial_state):
+    H = eps*Sigma_minus@Sigma_plus
 
-def output_results(vtqe_results, exact_diag_results):
+    #Define lindblad operators
+    L_plus = np.sqrt(gamma*(1-F)) * Sigma_plus
+    L_minus = np.sqrt(gamma*F) * Sigma_minus
+
+    L_K = [L_minus, L_plus] 
+
+
+
+    Superoperator = Liouvillian(H, L_K)
+    null = null_space(Superoperator)
+    NULL = null[:, 0]
+    rho_ss = NULL.reshape(2, 2)
+    rho_ss = rho_ss / np.trace(rho_ss)
+
+    referenceN = np.trace(numberop @ rho_ss)
+    print(f"Reference number operator expectation value: {referenceN}")
+
+    # verify_density_matrix(rho_ss)
+    verify_density_matrix(initial_state)
+
+    # Create time evolution operator
+    U = scipy.linalg.expm(Superoperator * dt)
+    rho_t = initial_state.reshape(4,1)  # Vectorized  state
+
+    expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
+    print("Initial expectation value of number operator:", expectation_value_history[0])
+    time_points = [0]
+
+    # Time evolution loop
+    for step in range(nt):
+        rho_t = U @ rho_t
+        rho_matrix = rho_t.reshape(2 ,2)
+        rho_matrix = rho_matrix / np.trace(rho_matrix)
+        expectation_value_history.append(np.trace(numberop @ rho_matrix))
+        time_points.append((step + 1) * dt)
+
+def build_exact_diag_hamiltonian():
     print("Gonna do it one day")
+def output_results(vtqe_results, exact_diag_results, time, nt, eps, mu, T, num_op_list, trace_list, expectation_value_history,time_points):
+    plt.plot(np.linspace(0, time, nt), trace_list, label='Trace of Density Matrix')
+    plt.plot(np.linspace(0, time, nt), num_op_list, label='Expectation Value of Number Operator VQE')
+    plt.plot(np.linspace(0, time, nt), [1 / (1 + np.exp((eps - mu) / T))] * nt, label='Steady State Expectation Value', linestyle='--')
+    plt.plot(time_points, expectation_value_history, label='Expectation Value Exact Diagonalization')
+    # plt.axhline(y=referenceN, color='r', linestyle='--', label='Reference')
+    plt.xlabel('Time')
+    plt.ylabel('Value')
+    plt.title('Time Evolution of Density Matrix and Number Operator')
+    plt.legend()
+    plt.grid()
+    plt.show()
