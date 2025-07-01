@@ -59,7 +59,7 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
 
 
     # Perform time evolution
-    for t in range(1, nt):
+    for t in range(2*nt):
         # Real evolution
         evolution_problem = TimeEvolutionProblem(ham_real, dt / 2)
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
