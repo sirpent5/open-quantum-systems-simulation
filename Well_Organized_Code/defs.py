@@ -6,3 +6,5 @@ Sigma_z = np.matrix([[1, 0], [0, -1]])
 Sigma_plus = (Sigma_x +1j*Sigma_y)/2
 Sigma_minus = Sigma_plus.getH()
 numberop = Sigma_minus@Sigma_plus
+
+##Parameters

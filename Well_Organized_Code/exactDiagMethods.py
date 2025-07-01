@@ -12,8 +12,7 @@ def Liouvillian(H, Ls, hbar = 1):
     return superH + superL
 
 
-def perform_exact_diag(eps, gamma, F, dt, nt, initial_state):
-    H = eps*Sigma_minus@Sigma_plus
+def perform_exact_diag(gamma, F, dt, nt, initial_state, H):
 
     #Define lindblad operators
     L_plus = np.sqrt(gamma*(1-F)) * Sigma_plus
@@ -50,5 +49,5 @@ def perform_exact_diag(eps, gamma, F, dt, nt, initial_state):
         time_points.append((step + 1) * dt)
     return expectation_value_history, time_points
 
-def build_exact_diag_hamiltonian():
-    print("Gonna do it one day")
+def build_exact_diag_hamiltonian(eps):
+    print(H = eps*Sigma_minus@Sigma_plus)
