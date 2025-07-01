@@ -45,7 +45,7 @@ def perform_exact_diag(gamma, F, dt, nt, initial_state, H):
         rho_matrix = rho_t.reshape(2 ,2)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
-        time_points.append((step + 1) * dt)
+        time_points.append(step * dt)
     return expectation_value_history, time_points
 
 def build_exact_diag_hamiltonian(eps):
