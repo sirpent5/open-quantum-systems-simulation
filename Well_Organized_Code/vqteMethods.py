@@ -45,15 +45,6 @@ def statevector_to_densitymatrix(v):
     m = int(np.sqrt(len(v)))
     return np.reshape(v, (m, m), order='F')
 
-def build_initial_states(ham_real):
-    ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
-    init_param_values = {}
-    for i in range(len(ansatz.parameters)):
-        init_param_values[ansatz.parameters[i]] = (
-        2*np.pi
-    )  # initialize the parameters which also decide the initial state
-    init_state = Statevector(ansatz.assign_parameters(init_param_values))
-
 
 # Get the statevector's data as a NumPy array
 #Convert initial state to exact diagonalization format
@@ -77,7 +68,6 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
     print("Initial expectation value of number operator using VQE:", num_op_list[0])
 
 
-    
 
     # Perform time evolution
     for t in range(1, nt):
@@ -98,3 +88,4 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
         trace_list.append(1.0) # Normalized so the trace is always 1
         num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
         #Stop
+    return num_op_list
