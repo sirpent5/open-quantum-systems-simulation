@@ -11,14 +11,70 @@ def Liouvillian(H, Ls, hbar = 1):
                           ) for L in Ls])
     return superH + superL
 
+def Enlarge_Matrix_site_j(j, N, matrix):
+    # I⊗...⊗I⊗M⊗I...⊗I: Convert local operators into global operators.
+    # j: site, starts in 0.
+    
+    M = np.eye(len(matrix))
+    if j == 0: M = matrix
+    
+    for i in range(1,N):
+        if i == j: M = np.kron(M, matrix)
+        else: M = np.kron(M, np.eye(len(matrix)))        
 
-def perform_exact_diag(gamma, F, dt, nt, initial_state, H):
+    return M
 
-    #Define lindblad operators
-    L_plus = np.sqrt(gamma*(1-F)) * Sigma_plus
-    L_minus = np.sqrt(gamma*F) * Sigma_minus
+def Correlation_Matrix_i_Matrix_j(i,j,N,matrix_i, matrix_j):
+    # I⊗...⊗I⊗M⊗I...⊗I⊗M⊗I⊗I...⊗I
 
-    L_K = [L_minus, L_plus] 
+    M = np.eye(len(matrix_i))
+    
+    if j == 0: M = matrix_j
+    elif i == 0: M = matrix_i
+    
+    for k in range(1,N):
+        if k == j: M = np.kron(M, matrix_j)
+        elif k == i: M = np.kron(M, matrix_i)
+        else: M = np.kron(M, np.eye(len(matrix_i)))        
+
+    return M
+
+def S_Term(N, cte_list, SigmaMatrix):
+    # I⊗...⊗I⊗ΔSigma⊗Sigma⊗I...⊗I: Sigma can be Sigmax, Sigmay or Sigmaz.
+    # cte_list = [cte_L, cte_M, cte_R], can be J or ∆.
+
+    Matrix_Sigma = np.zeros((2**N, 2**N))
+
+    cte_L = cte_list[0]
+    cte_M = cte_list[1]
+    cte_R = cte_list[2]    
+    
+    for i in range(0,N-1):
+        M = np.eye(len(SigmaMatrix))
+        
+        if i == 0: M = SigmaMatrix
+       
+        for j in range(1,N):
+            if j == i or j == i + 1: M = np.kron(M, SigmaMatrix)
+            else: M = np.kron(M, np.eye(len(SigmaMatrix)))        
+
+        if i < N/2 - 1: cte = cte_L
+        elif i > N/2 - 1: cte = cte_R
+        else: cte = cte_M
+
+        Matrix_Sigma = Matrix_Sigma + M*cte #cte can be ∆_i or J_i
+
+    return Matrix_Sigma #∑ I⊗...⊗I⊗ΔSigma⊗Sigma⊗I...⊗I
+
+
+def perform_exact_diag(gamma, F, dt, nt, initial_state, H,N):
+    lambda_1 = 0
+    lambda_N = 0.5
+    L_K = [np.sqrt(lambda_1)*Enlarge_Matrix_site_j(0, N, Sigma_plus),  
+           np.sqrt(1 - lambda_1)*Enlarge_Matrix_site_j(0, N, Sigma_minus), 
+           np.sqrt(lambda_N)*Enlarge_Matrix_site_j(N-1, N, Sigma_plus), 
+           np.sqrt(1 - lambda_N)*Enlarge_Matrix_site_j(N-1, N, Sigma_minus)]
+     
     Superoperator = Liouvillian(H, L_K)
     null = null_space(Superoperator)
     NULL = null[:, 0]
