@@ -25,6 +25,14 @@ def build_initial_states(ham_real):
         2*np.pi
     )  # initialize the parameters which also decide the initial state
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
+    
+    psi_vector = init_state.data
+    rho_matrix = psi_vector.reshape(2 ,2, order='F')
+
+
+    initial_state = np.matrix(rho_matrix)
+    return init_state, initial_state, ansatz, init_param_values
+
 
 def output_results(vqte_results, exact_diag_results, time, nt, eps, mu, T, time_points):
     plt.figure(figsize=(10, 6))
@@ -32,10 +40,10 @@ def output_results(vqte_results, exact_diag_results, time, nt, eps, mu, T, time_
     # Plot VQTE resultsW
 
     plt.plot(np.linspace(0, time, nt), [1 / (1 + np.exp((eps - mu) / T))] * nt, label='Steady State Expectation Value', linestyle='--')
-    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='.', linestyle='-')
+    plt.plot(time_points, exact_diag_results,marker='', label='Expectation Value (Simulated)', marker='.', linestyle='-')
     # Plot Exact results
     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
-    plt.plot(np.linspace(0, time, nt), vqte_results, marker='o', linestyle='-', label='VQTE Result')
+    plt.plot(np.linspace(0, time, nt), vqte_results,marker='', linestyle='-', label='VQTE Result')
     plt.title("Comparison of VQTE and Exact Time Evolution 🎯")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")

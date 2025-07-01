@@ -46,16 +46,6 @@ def statevector_to_densitymatrix(v):
     return np.reshape(v, (m, m), order='F')
 
 
-# Get the statevector's data as a NumPy array
-#Convert initial state to exact diagonalization format
-    psi_vector = init_state.data
-    rho_matrix = psi_vector.reshape(2 ,2, order='F')
-
-
-    initial_state = np.matrix(rho_matrix)
-    return init_state, initial_state, ansatz, init_param_values
-
-
 def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_param_values):
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
