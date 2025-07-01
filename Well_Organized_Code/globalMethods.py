@@ -37,10 +37,10 @@ def build_initial_states(ham_real):
 def output_results(vqte_results, exact_diag_results, time, nt, eps, mu, T, time_points, trace_list):
     plt.figure(figsize=(10, 6))
     print("Je")
-    # Plot VQTE resultsW
+    # Plot VQTE results
     plt.plot(np.linspace(0, time, nt), trace_list, label='Trace of Density Matrix')
-    plt.plot(np.linspace(0, time, nt), [1 / (1 + np.exp((eps - mu) / T))] * nt, label='Steady State Expectation Value', linestyle='- -')
-    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='--')
+    plt.plot(np.linspace(0, time, nt), [1 / (1 + np.exp((eps - mu) / T))] * nt, label='Steady State Expectation Value', linestyle='solid')
+    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='dashed')
     # Plot Exact results
     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
     plt.plot(np.linspace(0, time, nt)/2, vqte_results,marker='', linestyle='..', label='VQTE Result', color='green')

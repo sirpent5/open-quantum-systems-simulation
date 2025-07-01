@@ -19,7 +19,6 @@ def perform_exact_diag(gamma, F, dt, nt, initial_state, H):
     L_minus = np.sqrt(gamma*F) * Sigma_minus
 
     L_K = [L_minus, L_plus] 
-
     Superoperator = Liouvillian(H, L_K)
     null = null_space(Superoperator)
     NULL = null[:, 0]
@@ -50,4 +49,5 @@ def perform_exact_diag(gamma, F, dt, nt, initial_state, H):
     return expectation_value_history, time_points
 
 def build_exact_diag_hamiltonian(eps):
-    print(H = eps*Sigma_minus@Sigma_plus)
+    H = eps*Sigma_minus@Sigma_plus
+    return H
