@@ -78,4 +78,4 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
         trace_list.append(1.0) # Normalized so the trace is always 1
         num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
         #Stop
-    return num_op_list
+    return num_op_list, trace_list
