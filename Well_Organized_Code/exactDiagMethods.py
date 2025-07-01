@@ -31,3 +31,11 @@ def verify_density_matrix(rho):
     # Check purity 
     purity = np.trace(rho @ rho)
     print(f"Purity (Tr(ρ²)): {purity} (should be 1 for pure state)")
+
+
+
+def perform_exact_diag():
+    print("Yuh")
+
+def output_results(vtqe_results, exact_diag_results):
+    print("Gonna do it one day")
