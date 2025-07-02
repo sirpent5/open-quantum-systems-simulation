@@ -122,11 +122,8 @@ def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, 
     plt.plot(time_axis, [steadyState] * (nt + 1),
              label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
              linestyle='--', color='red')
-    #plt.plot(time_axis,steadyState, label='Steady State Expectation Value (Effective)', linestyle='solid', color='red')
-    plt.plot(time_axis, [1 / (1 + np.exp((eps - mu_effective) / T_effective))] * (nt + 1),label='Steady State Expectation Value (Effective)', linestyle='solid', color='red')
-    #plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
+
     plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
-    # Plot Exact results
 
     plt.title("Exact Diagonalization Results of two reserviors coupled to a single qubit")
     plt.xlabel("Time (t)")
