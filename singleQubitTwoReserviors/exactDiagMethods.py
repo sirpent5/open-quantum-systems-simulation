@@ -70,19 +70,18 @@ def S_Term(N, cte_list, SigmaMatrix):
 def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
 
     
-    lambda_1 = 0
-    lambda_N = 0.5
     L_K = []
     
-    L_K.append(np.sqrt(np.sqrt(gamma* F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
-    L_K.append(np.sqrt(gamma * F_L)*Enlarge_Matrix_site_j(0, N, Sigma_plus)) 
-    L_K.append(np.sqrt(gamma * F_R)*Enlarge_Matrix_site_j(N-1, N, Sigma_minus))
+    L_K.append(np.sqrt(gamma*(1-F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
+    L_K.append(np.sqrt(gamma*F_L)*Enlarge_Matrix_site_j(0, N, Sigma_plus)) 
+    L_K.append(np.sqrt(gamma *(1-F_R))*Enlarge_Matrix_site_j(N-1, N, Sigma_minus))
     L_K.append(np.sqrt(gamma * F_R)*Enlarge_Matrix_site_j(N-1, N, Sigma_plus))
      
     Superoperator = Liouvillian(H, L_K)
+
     null = null_space(Superoperator)
     NULL = null[:, 0]
-    rho_ss = NULL.reshape(2, 2)
+    rho_ss = NULL.reshape(2**N, 2**N)
     rho_ss = rho_ss / np.trace(rho_ss)
 
     referenceN = np.trace(numberop @ rho_ss)
@@ -106,20 +105,21 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
         time_points.append(step * dt)
-    return expectation_value_history, time_points
+    return expectation_value_history, time_points, referenceN
 
 def build_exact_diag_hamiltonian(eps):
     H = eps*Sigma_minus@Sigma_plus
     return H
 
 
-def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points):
+def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points, steadyState):
 
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt+1)
     mu_effective = (mu_L + mu_R) / 2
     T_effective = (T_L + T_R) / 2
     time_axis = np.linspace(0, time, nt+1)
+    plt.plot(time_axis,steadyState, label='Steady State Expectation Value (Effective)', linestyle='solid', color='red')
     plt.plot(time_axis, [1 / (1 + np.exp((eps - mu_effective) / T_effective))] * (nt + 1),label='Steady State Expectation Value (Effective)', linestyle='solid', color='red')
     #plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
     plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
