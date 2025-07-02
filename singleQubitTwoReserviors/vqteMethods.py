@@ -5,7 +5,7 @@ from imports import *
 def hamiltonian_generation(eps, gamma, F_R,F_L):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
-
+    
     Inputs:
         eps: (float) Coupling strength of the qubit to the reservoir.
         gamma: (float) Coupling strength of the qubit to the environment.
@@ -15,37 +15,10 @@ def hamiltonian_generation(eps, gamma, F_R,F_L):
         hamiltonian_re: SparsePauliOp representing the real part of the Hamiltonian of the system.
         hamiltonian_im: SparsePauliOp representing the imaginary part of the Hamiltonian of the system.
     """
-    re_L_part = SparsePauliOp(["IZ", "ZI", "XY", "YX"], 
-                              coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_L)) / 4])
-    
-    # Term 2: Real part contribution from F_R
-    # (Assuming the same terms contribute, but with F_R instead of F_L)
-    re_R_part = SparsePauliOp(["IZ", "ZI", "XY", "YX"], 
-                              coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F_R)) / 4, -(gamma * (1 - 2*F_R)) / 4]) 
-    # However, sticking to "alter this as little as possible" from your input:
-    hamiltonian_re = re_L_part + re_R_part
-    hamiltonian_re.simplify() # Simplify combines identical Pauli terms
+    F = (1- 2*F_L)+(1- 2*F_R)
 
-    # Term 1: Imaginary part contribution from F_L
-    im_L_part = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], 
-                                   coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_L)) / 4, (gamma * (1 - 2*F_L)) / 4])
-    
-    # Term 2: Imaginary part contribution from F_R
-    im_R_part = SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], 
-                              coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_R)) / 4, (gamma * (1 - 2*F_R)) / 4])
-    
-    # Summing the contributions for the total imaginary part.
-    # Same note as above regarding potential duplication of constant terms if present.
-    hamiltonian_im = im_L_part + im_R_part
-    hamiltonian_im.simplify() # Simplify combines identical Pauli terms
-    
-
-
-    # hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_L)) / 4])
-    
-
-    # hamiltonian_im = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_L)) / 4, (gamma * (1 - 2*F_L)) / 4])
-    # + SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_R)) / 4, (gamma * (1 - 2*F_R)) / 4])
+    hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F)) / 4, -(gamma * (1 - 2*F)) / 4])
+    hamiltonian_im = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F)) / 4, (gamma * (1 - 2*F)) / 4])
     
     return hamiltonian_re, hamiltonian_im
 

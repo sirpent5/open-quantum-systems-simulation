@@ -45,7 +45,7 @@ def output_results(vqte_results, exact_diag_results, time, nt,time_points, trace
     plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
     # Plot Exact results
     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
-    plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
+    plt.plot(time_axis/2, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
