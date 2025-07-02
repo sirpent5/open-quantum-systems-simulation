@@ -71,7 +71,7 @@ def build_number_op(N, eps):
     big_num_op = np.zeros((2**N , 2**N), dtype=complex)
 
     for j in range(N):
-        big_num_op += Enlarge_Matrix_site_j(j,N,(eps*numberop))
+        big_num_op += Enlarge_Matrix_site_j(j,N,(numberop))
     return big_num_op
 
 def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
@@ -110,7 +110,8 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
     #Set lists
     for site in range(N):
             expectation_value_history.append([])
-
+ #save num op for each site
+ # add hopping
     # Document initial values    
     for site_idx in range(N):
         number_op = Enlarge_Matrix_site_j(site_idx, N, eps * numberop)
@@ -184,12 +185,7 @@ def generate_random_state(N):
     """
     dim = 2**N
     
-    # if pure:
-    #     # Random pure state (normalized complex vector)
-    #     psi = np.random.randn(dim) + 1j * np.random.randn(dim)
-    #     psi = psi / np.linalg.norm(psi)
-    #     rho = np.outer(psi, psi.conj())
-    # else:
+ 
         # Random mixed state (positive semi-definite, trace=1)
     A = np.random.randn(dim, dim) + 1j * np.random.randn(dim, dim)
     rho = A @ A.conj().T  # Positive semi-definite matrix
