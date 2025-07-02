@@ -84,6 +84,7 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     rho_ss = NULL.reshape(2**N, 2**N)
     rho_ss = rho_ss / np.trace(rho_ss)
 
+
     referenceN = np.trace(numberop @ rho_ss)
     print(f"Reference number operator expectation value: {referenceN}")
 
@@ -94,14 +95,23 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     U = scipy.linalg.expm(Superoperator * dt)
     rho_t = initial_state.reshape(4,1)  # Vectorized  state
 
-    #expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
+    initial_state_trace = np.trace(initial_state)
 
     expectation_value_history = []
 
     for site in range(N):
             expectation_value_history.append([])
 
-    
+    for site_idx in range(N):
+        # 1. Create the number operator for the current site
+        # This is a matrix with 1 at (site_idx, site_idx) and 0 elsewhere
+        number_operator_site_i = np.zeros((N, N), dtype=complex)
+        number_operator_site_i[site_idx, site_idx] = 1.0
+
+        expectation_i = np.trace(np.dot(number_operator_site_i, initial_state))
+        # Store the result
+        expectation_value_history.append(expectation_i)
+
 
     print("Initial expectation value of number operator:", expectation_value_history[0])
     time_points = [0]
@@ -111,7 +121,9 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
         rho_t = U @ rho_t
         rho_matrix = rho_t.reshape(2 ,2)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
-        expectation_value_history.append(np.trace(numberop @ rho_matrix))
+        for site_idx in range(N):
+            exp_val = np.trace(np.dot(numberop[site_idx], rho_t))
+            expectation_value_history[site_idx].append(exp_val.real)
         time_points.append(step * dt)
 
 
@@ -119,25 +131,13 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
 
 
 
-def build_exact_diag_hamiltonian(N,epsilon,J):
+def build_exact_diag_hamiltonian(N, eps):
+    H = np.zeros((2**N , 2**N), dtype=complex)
 
-    a = []
+    for j in range(N):
+        H += Enlarge_Matrix_site_j(j,N,(eps*Sigma_minus@Sigma_plus))
 
-    H = np.zeros((N, N), dtype=complex) # Use complex dtype for generality, though real for this case
-
-    # On-site energy term
-    # This corresponds to the diagonal elements of the Hamiltonian
-    for i in range(N):
-        H[i, i] += epsilon
-
-    # Hopping term
-    for i in range(N - 1):
-        H[i, i + 1] += J 
-        H[i + 1, i] += J 
-
-
-    return H
-   
+    return H    
 
 
 
@@ -151,8 +151,9 @@ def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, 
     plt.plot(time_axis, [steadyState] * (nt + 1),
              label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
              linestyle='--', color='red')
-
-    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
+    for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
+        plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
+    #plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
 
     plt.title("Exact Diagonalization Results of two reserviors coupled to a single qubit")
     plt.xlabel("Time (t)")
