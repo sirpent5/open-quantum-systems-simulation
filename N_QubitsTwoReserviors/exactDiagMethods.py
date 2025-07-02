@@ -94,7 +94,15 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     U = scipy.linalg.expm(Superoperator * dt)
     rho_t = initial_state.reshape(4,1)  # Vectorized  state
 
-    expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
+    #expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
+
+    expectation_value_history = []
+
+    for site in range(N):
+            expectation_value_history.append([])
+
+    
+
     print("Initial expectation value of number operator:", expectation_value_history[0])
     time_points = [0]
 
@@ -105,11 +113,32 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
         time_points.append(step * dt)
+
+
     return expectation_value_history, time_points, referenceN
 
-def build_exact_diag_hamiltonian(eps):
-    H = eps*Sigma_minus@Sigma_plus
+
+
+def build_exact_diag_hamiltonian(N,epsilon,J):
+
+    a = []
+
+    H = np.zeros((N, N), dtype=complex) # Use complex dtype for generality, though real for this case
+
+    # On-site energy term
+    # This corresponds to the diagonal elements of the Hamiltonian
+    for i in range(N):
+        H[i, i] += epsilon
+
+    # Hopping term
+    for i in range(N - 1):
+        H[i, i + 1] += J 
+        H[i + 1, i] += J 
+
+
     return H
+   
+
 
 
 def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points, steadyState):
