@@ -15,7 +15,7 @@ def hamiltonian_generation(eps, gamma, F_R,F_L):
         hamiltonian_re: SparsePauliOp representing the real part of the Hamiltonian of the system.
         hamiltonian_im: SparsePauliOp representing the imaginary part of the Hamiltonian of the system.
     """
-    F = (1- 2*F_L)+(1- 2*F_R)
+    F = -((1- 2*F_L)+(1- 2*F_R))
 
     hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F)) / 4, -(gamma * (1 - 2*F)) / 4])
     hamiltonian_im = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F)) / 4, (gamma * (1 - 2*F)) / 4])
