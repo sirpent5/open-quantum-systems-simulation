@@ -66,8 +66,15 @@ def S_Term(N, cte_list, SigmaMatrix):
 
     return Matrix_Sigma #∑ I⊗...⊗I⊗ΔSigma⊗Sigma⊗I...⊗I
 
+def build_number_op(N, eps):
 
-def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
+    big_num_op = np.zeros((2**N , 2**N), dtype=complex)
+
+    for j in range(N):
+        big_num_op += Enlarge_Matrix_site_j(j,N,(eps*numberop))
+    return big_num_op
+
+def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
 
     
     L_K = []
@@ -84,8 +91,8 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     rho_ss = NULL.reshape(2**N, 2**N)
     rho_ss = rho_ss / np.trace(rho_ss)
 
-
-    referenceN = np.trace(numberop @ rho_ss)
+    big_num_op = build_number_op(N, eps)
+    referenceN = np.trace(big_num_op @ rho_ss)
     print(f"Reference number operator expectation value: {referenceN}")
 
     # verify_density_matrix(rho_ss)
@@ -105,9 +112,9 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     for site_idx in range(N):
         # 1. Create the number operator for the current site
         # This is a matrix with 1 at (site_idx, site_idx) and 0 elsewhere
-        number_operator_site_i = np.zeros((N, N), dtype=complex)
-        number_operator_site_i[site_idx, site_idx] = 1.0
-
+        number_operator_site_i = build_number_op(site_idx+1, eps)
+        print(number_operator_site_i)
+        print(initial_state)
         expectation_i = np.trace(np.dot(number_operator_site_i, initial_state))
         # Store the result
         expectation_value_history.append(expectation_i)
@@ -122,7 +129,8 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
         rho_matrix = rho_t.reshape(2 ,2)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         for site_idx in range(N):
-            exp_val = np.trace(np.dot(numberop[site_idx], rho_t))
+            number_operator_site_i = build_number_op(site_idx, eps)
+            exp_val = np.trace(number_operator_site_i @ rho_t)
             expectation_value_history[site_idx].append(exp_val.real)
         time_points.append(step * dt)
 
