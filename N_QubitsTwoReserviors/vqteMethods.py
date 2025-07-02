@@ -22,6 +22,7 @@ def hamiltonian_generation(eps, gamma, F_R,F_L):
     
     return hamiltonian_re, hamiltonian_im
 
+
 def hamiltonian_generation_simple():
     """
     Generates a simple Hamiltonian for a single qubit system.

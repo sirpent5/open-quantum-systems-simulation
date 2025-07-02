@@ -100,7 +100,8 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
 
     # Create time evolution operator
     U = scipy.linalg.expm(Superoperator * dt)
-    rho_t = initial_state.reshape(4,1)  # Vectorized  state
+
+    rho_t = initial_state.reshape(2**N * 2**N, 1)  # Vectorized  state
 
     initial_state_trace = np.trace(initial_state)
 
@@ -109,16 +110,19 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
     for site in range(N):
             expectation_value_history.append([])
 
+    # for site_idx in range(N):
+    #     # 1. Create the number operator for the current site
+    #     # This is a matrix with 1 at (site_idx, site_idx) and 0 elsewhere
+    #     number_operator_site_i = build_number_op(site_idx+1, eps)
+    #     print(number_operator_site_i)
+    #     print(initial_state)
+    #     expectation_i = np.trace(np.dot(number_operator_site_i, initial_state))
+    #     # Store the result
+    #     expectation_value_history.append(expectation_i)
     for site_idx in range(N):
-        # 1. Create the number operator for the current site
-        # This is a matrix with 1 at (site_idx, site_idx) and 0 elsewhere
-        number_operator_site_i = build_number_op(site_idx+1, eps)
-        print(number_operator_site_i)
-        print(initial_state)
-        expectation_i = np.trace(np.dot(number_operator_site_i, initial_state))
-        # Store the result
-        expectation_value_history.append(expectation_i)
-
+        number_op = Enlarge_Matrix_site_j(site_idx, N, eps * numberop)
+        expectation_i = np.trace(number_op @ initial_state)
+        expectation_value_history[site_idx].append(expectation_i.real)
 
     print("Initial expectation value of number operator:", expectation_value_history[0])
     time_points = [0]
@@ -126,11 +130,12 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
     # Time evolution loop
     for step in range(1,nt+1):
         rho_t = U @ rho_t
-        rho_matrix = rho_t.reshape(2 ,2)
+        rho_matrix = rho_t.reshape(2**N ,2**N)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
+
         for site_idx in range(N):
-            number_operator_site_i = build_number_op(site_idx, eps)
-            exp_val = np.trace(number_operator_site_i @ rho_t)
+            number_operator = Enlarge_Matrix_site_j(site_idx, N, eps*numberop)
+            exp_val = np.trace(number_operator @ rho_matrix)
             expectation_value_history[site_idx].append(exp_val.real)
         time_points.append(step * dt)
 
@@ -170,3 +175,31 @@ def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, 
     plt.legend()
     
     plt.show()
+
+
+def generate_random_state(N):
+    """
+    Generate a random quantum state (density matrix) for N qubits.
+    
+    Parameters:
+        N (int): Number of qubits.
+        pure (bool): If True, returns a pure state (rank-1 density matrix).
+                    If False, returns a mixed state (default).
+    
+    Returns:
+        rho (np.ndarray): Random density matrix of shape (2^N, 2^N).
+    """
+    dim = 2**N
+    
+    # if pure:
+    #     # Random pure state (normalized complex vector)
+    #     psi = np.random.randn(dim) + 1j * np.random.randn(dim)
+    #     psi = psi / np.linalg.norm(psi)
+    #     rho = np.outer(psi, psi.conj())
+    # else:
+        # Random mixed state (positive semi-definite, trace=1)
+    A = np.random.randn(dim, dim) + 1j * np.random.randn(dim, dim)
+    rho = A @ A.conj().T  # Positive semi-definite matrix
+    rho = rho / np.trace(rho)  # Normalize trace to 1
+    
+    return rho
