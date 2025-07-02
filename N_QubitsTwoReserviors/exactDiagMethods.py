@@ -102,23 +102,16 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
     U = scipy.linalg.expm(Superoperator * dt)
 
     rho_t = initial_state.reshape(2**N * 2**N, 1)  # Vectorized  state
+    rho_vector = rho_t.reshape(2**N * 2**N, 1) 
 
     initial_state_trace = np.trace(initial_state)
 
     expectation_value_history = []
-
+    #Set lists
     for site in range(N):
             expectation_value_history.append([])
 
-    # for site_idx in range(N):
-    #     # 1. Create the number operator for the current site
-    #     # This is a matrix with 1 at (site_idx, site_idx) and 0 elsewhere
-    #     number_operator_site_i = build_number_op(site_idx+1, eps)
-    #     print(number_operator_site_i)
-    #     print(initial_state)
-    #     expectation_i = np.trace(np.dot(number_operator_site_i, initial_state))
-    #     # Store the result
-    #     expectation_value_history.append(expectation_i)
+    # Document initial values    
     for site_idx in range(N):
         number_op = Enlarge_Matrix_site_j(site_idx, N, eps * numberop)
         expectation_i = np.trace(number_op @ initial_state)
@@ -168,7 +161,7 @@ def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, 
         plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
     #plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
 
-    plt.title("Exact Diagonalization Results of two reserviors coupled to a single qubit")
+    plt.title("Exact Diagonalization Results of two reserviors coupled to N qubits")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
     plt.grid(True)
