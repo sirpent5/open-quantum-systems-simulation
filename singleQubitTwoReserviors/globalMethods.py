@@ -34,20 +34,22 @@ def build_initial_states(ham_real):
     return init_state, initial_state, ansatz, init_param_values
 
 
-# def output_results(vqte_results, exact_diag_results, time, nt, eps, mu_L, mu_R, T_L,T_R, time_points, trace_list):
-#     plt.figure(figsize=(10, 6))
-#     time_axis = np.linspace(0, time, nt+1)
-
-#     plt.plot(time_axis, trace_list, label='Trace of Density Matrix')
-#     plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
-#     plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
-#     # Plot Exact results
-#     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
-#     plt.plot(time_axis/2, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
-#     plt.title("Comparison of VQTE and Exact Time Evolution")
-#     plt.xlabel("Time (t)")
-#     plt.ylabel("⟨n⟩ (Expectation Value)")
-#     plt.grid(True)
-#     plt.legend()
+def output_results(vqte_results, exact_diag_results, time, nt,time_points, trace_list,steadyState):
+    plt.figure(figsize=(10, 6))
+    time_axis = np.linspace(0, time, nt+1)
+    plt.plot(time_axis, [steadyState] * (nt + 1),
+             label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
+             linestyle='--', color='red')
+    plt.plot(time_axis, trace_list, label='Trace of Density Matrix')
+    #plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
+    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
+    # Plot Exact results
+    #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
+    plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
+    plt.title("Comparison of VQTE and Exact Time Evolution")
+    plt.xlabel("Time (t)")
+    plt.ylabel("⟨n⟩ (Expectation Value)")
+    plt.grid(True)
+    plt.legend()
     
-#     plt.show()
+    plt.show()
