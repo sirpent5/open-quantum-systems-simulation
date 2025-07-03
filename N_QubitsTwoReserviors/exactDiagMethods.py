@@ -139,13 +139,36 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
 
 
 def build_exact_diag_hamiltonian(N, eps):
-    H = np.zeros((2**N , 2**N), dtype=complex)
+    J = 1
+    # H = np.zeros((2**N , 2**N), dtype=complex)
 
-    for j in range(N):
-        H += Enlarge_Matrix_site_j(j,N,(eps*Sigma_minus@Sigma_plus))
+    # for j in range(N-1):
+    #     H += Enlarge_Matrix_site_j(j,N,(eps*Sigma_minus@Sigma_plus))
+   
+    H = np.zeros((2**N, 2**N), dtype=complex)
 
-    return H    
+    # Loop over each adjacent pair of sites (0,1), (1,2), ..., (N-2, N-1)
+    for i in range(N - 1):
+        # Initialize the kronecker products for the two terms in the sum
+        op_term1 = 1.0  # Will become the J * σ⁺_i σ⁻_{i+1} term
+        op_term2 = 1.0  # Will become the J * σ⁻_i σ⁺_{i+1} term
 
+        # Build the full 2**N x 2**N operator for the current pair (i, i+1)
+        for j in range(N):
+            if j == i:
+                op_term1 = np.kron(op_term1, Sigma_plus)
+                op_term2 = np.kron(op_term2, Sigma_minus)
+            elif j == i+1:
+                op_term1 = np.kron(op_term1, Sigma_minus)
+                op_term2 = np.kron(op_term2, Sigma_plus)
+            else:
+                op_term1 = np.kron(op_term1, np.eye(2))
+                op_term2 = np.kron(op_term2, np.eye(2))
+        
+        # Add the two completed terms for this pair to the total Hamiltonian
+        H += J * (op_term1 + op_term2)
+        
+    return H
 
 
 def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points, steadyState):
@@ -155,9 +178,9 @@ def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, 
     mu_effective = (mu_L + mu_R) / 2
     T_effective = (T_L + T_R) / 2
     time_axis = np.linspace(0, time, nt+1)
-    plt.plot(time_axis, [steadyState] * (nt + 1),
-             label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
-             linestyle='--', color='red')
+    #plt.plot(time_axis, [steadyState] * (nt + 1),
+     #        label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
+      #       linestyle='--', color='red')
     for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
         plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
     #plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
