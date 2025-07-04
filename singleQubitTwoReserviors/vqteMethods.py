@@ -2,7 +2,7 @@
 # from qiskit.quantum_info import SparsePauliOp
 # import numpy as np
 from imports import *
-def hamiltonian_generation(eps, gamma, F_R,F_L):
+def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
     
@@ -15,10 +15,42 @@ def hamiltonian_generation(eps, gamma, F_R,F_L):
         hamiltonian_re: SparsePauliOp representing the real part of the Hamiltonian of the system.
         hamiltonian_im: SparsePauliOp representing the imaginary part of the Hamiltonian of the system.
     """
-    F = -((1- 2*F_L)+(1- 2*F_R))
 
-    hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F)) / 4, -(gamma * (1 - 2*F)) / 4])
-    hamiltonian_im = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F)) / 4, (gamma * (1 - 2*F)) / 4])
+   # hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F)) / 4, -(gamma * (1 - 2*F)) / 4])
+    hamiltonian_re_coeffs = {
+        # System energy influenced by both reservoirs
+        "IIZ": -eps,
+        # Energy of Reservoir 1
+        "IZI": eps/ 2,
+        # Energy of Reservoir 2
+        "ZII": eps / 2,
+        # System <-> Reservoir 1 coupling
+        "XYI": -(gamma * F_L) / 4,
+        "YXI": -(gamma * F_L) / 4,
+        # System <-> Reservoir 2 coupling
+        "XIY": -(gamma * F_R) / 4,
+        "YIX": -(gamma * F_R) / 4, }
+
+    hamiltonian_im_coeffs = {
+        # Global term from both reservoirs
+        "III": -gamma,
+        # System <-> Res 1 dissipative interaction
+        "XXI": gamma / 4,
+        "YYI": -gamma / 4,
+        # System <-> Res 2 dissipative interaction
+        "XIX": gamma / 4,
+        "YIY": -gamma / 4,
+        # Bias terms for System-Res1
+        "IIZ": (gamma * F_L) / 4 + (gamma * F_R) / 4, # System bias from both
+        "IZI": (gamma * F_L) / 4,                     # Res 1 bias
+        "ZII": (gamma * F_R) / 4,                     # Res 2 bias
+    }
+    hamiltonian_re = SparsePauliOp(list(hamiltonian_re_coeffs.keys()), coeffs=list(hamiltonian_re_coeffs.values()))
+    hamiltonian_im = -1 * SparsePauliOp(list(hamiltonian_im_coeffs.keys()), coeffs=list(hamiltonian_im_coeffs.values()))
+    
+    # hamiltonian_im = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F)) / 4, (gamma * (1 - 2*F)) / 4])
+    
+
     
     return hamiltonian_re, hamiltonian_im
 
@@ -52,6 +84,8 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
 
 # Initialize lists to store results
 #second is the is expectation value of the number operator
+    num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
+
     trace_list = [1.0]
     num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
     print("Initial expectation value of number operator using VQE:", num_op_list[0])
@@ -75,6 +109,34 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
         # Calculate the trace and expectation value of the number operator
         trace = np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data))
         trace_list.append(1.0) # Normalized so the trace is always 1
-        num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
+        #num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
+        current_psi = Statevector(ansatz.assign_parameters(init_param_values))
+
+# The imaginary evolution step means the state is no longer normalized.
+# We must renormalize to calculate a physical expectation value.
+        normalized_psi = current_psi / current_psi.norm()
+
+# Calculate the expectation value using the correct operator and Qiskit's method
+        exp_val = normalized_psi.expectation_value(num_op).real
+        num_op_list.append(exp_val)
         #Stop
     return num_op_list, trace_list
+
+
+def output_vqte_results(vqte_results, time, nt, eps, mu_L,mu_R,T_L, T_R):
+
+    plt.figure(figsize=(10, 6))
+    time_axis = np.linspace(0, time, nt+1)
+    mu_effective = (mu_L + mu_R) / 2
+    T_effective = (T_L + T_R) / 2
+    time_axis = np.linspace(0, time, nt+1)
+    plt.plot(time_axis, [1 / (1 + np.exp((eps - mu_effective) / T_effective))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
+    plt.plot(time_axis/2, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
+
+    plt.title("VQTE Results of two reserviors coupled to a single qubit")
+    plt.xlabel("Time (t)")
+    plt.ylabel("⟨n⟩ (Expectation Value)")
+    plt.grid(True)
+    plt.legend()
+    
+    plt.show()

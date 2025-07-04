@@ -26,12 +26,13 @@ def build_initial_states(ham_real):
     )  # initialize the parameters which also decide the initial state
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
-    psi_vector = init_state.data
-    rho_matrix = psi_vector.reshape(2 ,2, order='F')
+    # psi_vector = init_state.data
+    # rho_matrix = psi_vector.reshape(2 ,2, order='F')
 
 
-    initial_state = np.matrix(rho_matrix)
-    return init_state, initial_state, ansatz, init_param_values
+    #initial_state = np.matrix(rho_matrix)
+    return init_state, ansatz, init_param_values
+    #return init_state, initial_state, ansatz, init_param_values
 
 
 def output_results(vqte_results, exact_diag_results, time, nt,time_points, trace_list,steadyState):
