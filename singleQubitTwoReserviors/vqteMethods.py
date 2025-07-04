@@ -77,51 +77,94 @@ def statevector_to_densitymatrix(v):
     return np.reshape(v, (m, m), order='F')
 
 
-def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values):
+# def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values):
+#     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
+#     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
+
+
+# # Initialize lists to store results
+# #second is the is expectation value of the number operator
+#     num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
+
+#     trace_list = [1.0]
+#     num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
+#     print("Initial expectation value of number operator using VQE:", num_op_list[0])
+
+
+
+#     # Perform time evolution
+#     for t in range(nt):
+#         # Real evolution
+#         evolution_problem = TimeEvolutionProblem(ham_real, dt/2)
+#         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
+#         evolution_result_re = var_qrte.evolve(evolution_problem)
+#         init_param_values = evolution_result_re.parameter_values[-1]
+        
+#         # Imaginary evolution
+#         evolution_problem = TimeEvolutionProblem(ham_imag, dt/2)
+#         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
+#         evolution_result_im = var_qite.evolve(evolution_problem)
+#         init_param_values = evolution_result_im.parameter_values[-1]
+        
+#         # Calculate the trace and expectation value of the number operator
+#         trace = np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data))
+#         trace_list.append(1.0) # Normalized so the trace is always 1
+#         #num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
+#         current_psi = Statevector(ansatz.assign_parameters(init_param_values))
+
+# # The imaginary evolution step means the state is no longer normalized.
+# # We must renormalize to calculate a physical expectation value.
+#         normalized_psi = current_psi / current_psi.norm()
+
+# # Calculate the expectation value using the correct operator and Qiskit's method
+#         exp_val = normalized_psi.expectation_value(num_op).real
+#         num_op_list.append(exp_val)
+#         #Stop
+#     return num_op_list, trace_list
+
+def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_values):
+    """
+    Performs the VQTE simulation with corrected calculations.
+    """
+    # Define the variational principles
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-
-# Initialize lists to store results
-#second is the is expectation value of the number operator
+    # --- Correctly initialize the results list ---
+    # Define the number operator for the system qubit (qubit 0)
     num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
+    
+    # Calculate the initial expectation value using the correct method
+    initial_exp_val = init_state.expectation_value(num_op).real
+    num_op_list = [initial_exp_val]
+    
+    print(f"Initial expectation value of number operator: {initial_exp_val:.4f}")
 
-    trace_list = [1.0]
-    num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
-    print("Initial expectation value of number operator using VQE:", num_op_list[0])
-
-
-
-    # Perform time evolution
+    # --- Perform time evolution ---
     for t in range(nt):
         # Real evolution
-        evolution_problem = TimeEvolutionProblem(ham_real, dt/2)
+        evolution_problem_re = TimeEvolutionProblem(ham_real, dt / 2)
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
-        evolution_result_re = var_qrte.evolve(evolution_problem)
+        evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
         
         # Imaginary evolution
-        evolution_problem = TimeEvolutionProblem(ham_imag, dt/2)
+        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt / 2)
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
-        evolution_result_im = var_qite.evolve(evolution_problem)
+        evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
         
-        # Calculate the trace and expectation value of the number operator
-        trace = np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data))
-        trace_list.append(1.0) # Normalized so the trace is always 1
-        #num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
+        # --- Calculate and store the expectation value ---
         current_psi = Statevector(ansatz.assign_parameters(init_param_values))
 
-# The imaginary evolution step means the state is no longer normalized.
-# We must renormalize to calculate a physical expectation value.
-        normalized_psi = current_psi / current_psi.norm()
-
-# Calculate the expectation value using the correct operator and Qiskit's method
+        # Renormalize the statevector after non-unitary imaginary evolution
+        #normalized_psi = current_psi / current_psi.norm()
+        normalized_psi = current_psi / np.linalg.norm(current_psi.data)
+        # Calculate the expectation value correctly
         exp_val = normalized_psi.expectation_value(num_op).real
         num_op_list.append(exp_val)
-        #Stop
-    return num_op_list, trace_list
-
+        
+    return num_op_list
 
 def output_vqte_results(vqte_results, time, nt, eps, mu_L,mu_R,T_L, T_R):
 

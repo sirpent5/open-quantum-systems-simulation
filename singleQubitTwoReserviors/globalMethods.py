@@ -17,23 +17,35 @@ def verify_density_matrix(rho):
     purity = np.trace(rho @ rho)
     print(f"Purity (Tr(ρ²)): {purity} (should be 1 for pure state)")
 
-def build_initial_states(ham_real):
-    ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
-    init_param_values = {}
-    for i in range(len(ansatz.parameters)):
-        init_param_values[ansatz.parameters[i]] = (
-        2*np.pi
-    )  # initialize the parameters which also decide the initial state
-    init_state = Statevector(ansatz.assign_parameters(init_param_values))
+# def build_initial_states(ham_real):
+#     ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+#     init_param_values = {}
+#     for i in range(len(ansatz.parameters)):
+#         init_param_values[ansatz.parameters[i]] = (
+#         2*np.pi
+#     )  # initialize the parameters which also decide the initial state
+#     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
-    # psi_vector = init_state.data
-    # rho_matrix = psi_vector.reshape(2 ,2, order='F')
+#     psi_vector = init_state.data
+#     rho_matrix = psi_vector.reshape(2 ,2, order='F')
 
 
-    #initial_state = np.matrix(rho_matrix)
-    return init_state, ansatz, init_param_values
-    #return init_state, initial_state, ansatz, init_param_values
+#     initial_state = np.matrix(rho_matrix)
+#     return init_state, ansatz, init_param_values
+#    # return init_state, initial_state, ansatz, init_param_values
+def build_initial_states(ham_real):
+  """
+  Initializes the ansatz and parameters to create the |00...0> state.
+  """
+  ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+  
+  # A simpler way to set all parameters to 0
+  init_param_values = np.zeros(ansatz.num_parameters)
 
+  # Create the state by binding the zero-parameters to the ansatz
+  init_state = Statevector(ansatz.assign_parameters(init_param_values))
+
+  return init_state, ansatz, init_param_values
 
 def output_results(vqte_results, exact_diag_results, time, nt,time_points, trace_list,steadyState):
     plt.figure(figsize=(10, 6))
