@@ -35,14 +35,16 @@ def verify_density_matrix(rho):
 #    # return init_state, initial_state, ansatz, init_param_values
 def build_initial_states(ham_real):
   """
-  Initializes the ansatz and parameters to create the |00...0> state.
+  Initializes the ansatz and parameters with small random values.
   """
   ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
   
-  # A simpler way to set all parameters to 0
-  init_param_values = np.zeros(ansatz.num_parameters)
+  # A better way to set initial parameters: small random values
+  # This prevents the gradient from being zero at the start.
+  np.random.seed(42) # Optional: for reproducible results
+  init_param_values = np.random.rand(ansatz.num_parameters) * 0.1 # Small random numbers
 
-  # Create the state by binding the zero-parameters to the ansatz
+  # Create the state by binding the parameters to the ansatz
   init_state = Statevector(ansatz.assign_parameters(init_param_values))
 
   return init_state, ansatz, init_param_values
