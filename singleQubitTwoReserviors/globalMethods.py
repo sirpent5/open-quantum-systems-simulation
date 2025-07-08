@@ -52,23 +52,9 @@ def build_initial_states(ham_real):
 
         initial_state = np.matrix(rho_matrix)
 
-        ##Ensure valiud density matrix!! Trace = 1
+        verify_density_matrix(initial_state)
+
         return init_state, initial_state, ansatz, init_param_values
-# def build_initial_states(ham_real):
-#   """
-#   Initializes the ansatz and parameters with small random values.
-#   """
-#   ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
-  
-#   # A better way to set initial parameters: small random values
-#   # This prevents the gradient from being zero at the start.
-#   np.random.seed(42) # Optional: for reproducible results
-#   init_param_values = np.random.rand(ansatz.num_parameters) * 0.1 # Small random numbers
-
-#   # Create the state by binding the parameters to the ansatz
-#   init_state = Statevector(ansatz.assign_parameters(init_param_values))
-
-#   return init_state, ansatz, init_param_values
 
 def output_results(vqte_results, exact_diag_results, time, nt,time_points, trace_list,steadyState):
     plt.figure(figsize=(10, 6))

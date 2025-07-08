@@ -87,9 +87,6 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     referenceN = np.trace(numberop @ rho_ss)
     print(f"Reference number operator expectation value: {referenceN}")
 
-    # verify_density_matrix(rho_ss)
-    #verify_density_matrix(initial_state)
-
     # Create time evolution operator
     d = len(H)
     U = scipy.linalg.expm(Superoperator * dt)

@@ -2,6 +2,7 @@
 # from qiskit.quantum_info import SparsePauliOp
 # import numpy as np
 from imports import *
+from defs import numberop, Sigma_minus, Sigma_plus, Sigma_x, Sigma_y, Sigma_z
 def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
@@ -49,21 +50,6 @@ def statevector_to_densitymatrix(v):
     return np.reshape(v, (m, m), order='F')
 
 
-# def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values):
-#     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
-#     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
-
-
-# # Initialize lists to store results
-# #second is the is expectation value of the number operator
-#     num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
-
-#     trace_list = [1.0]
-#     num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
-#     print("Initial expectation value of number operator using VQE:", num_op_list[0])
-
-
-
 #     # Perform time evolution
 #     for t in range(nt):
 #         # Real evolution
@@ -102,7 +88,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-
+    trace_list = [1.0]
     num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
     
     initial_exp_val = init_state.expectation_value(num_op).real
@@ -123,17 +109,20 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
+
+         # Normalized so the trace is always 1
         
  
         current_psi = Statevector(ansatz.assign_parameters(init_param_values))
-
-    
-        normalized_psi = current_psi / np.linalg.norm(current_psi.data)
-      
-        exp_val = normalized_psi.expectation_value(num_op).real
-        num_op_list.append(exp_val)
         
-    return num_op_list
+        
+        normalized_psi = current_psi / np.linalg.norm(current_psi.data)
+        trace = np.trace(statevector_to_densitymatrix(normalized_psi.data))
+        trace_list.append(trace) # This should be very close to 1.0
+        exp_val = normalized_psi.expectation_value(num_op).real
+        num_op_list.append(exp_val.real)
+        
+    return num_op_list, trace_list
 
 def output_vqte_results(vqte_results, time, nt, eps, mu_L,mu_R,T_L, T_R):
 
