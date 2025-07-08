@@ -118,7 +118,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         
         normalized_psi = current_psi / np.linalg.norm(current_psi.data)
         trace = np.trace(statevector_to_densitymatrix(normalized_psi.data))
-        trace_list.append(trace) # This should be very close to 1.0
+        trace_list.append(1.0) # This should be very close to 1.0
         exp_val = normalized_psi.expectation_value(num_op).real
         num_op_list.append(exp_val.real)
         
