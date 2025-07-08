@@ -84,8 +84,7 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     rho_ss = NULL.reshape(2**N, 2**N)
     rho_ss = rho_ss / np.trace(rho_ss)
 
-    referenceN = np.trace(numberop @ rho_ss)
-    print(f"Reference number operator expectation value: {referenceN}")
+  
 
     # Create time evolution operator
     d = len(H)
@@ -103,7 +102,7 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
         time_points.append(step * dt)
-    return expectation_value_history, time_points, referenceN
+    return expectation_value_history, time_points
 
 def build_exact_diag_hamiltonian(eps):
     H = eps*Sigma_minus@Sigma_plus

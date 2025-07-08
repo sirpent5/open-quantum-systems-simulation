@@ -66,17 +66,16 @@ def S_Term(N, cte_list, SigmaMatrix):
 
     return Matrix_Sigma #∑ I⊗...⊗I⊗ΔSigma⊗Sigma⊗I...⊗I
 
-def build_number_op(N, eps):
-
-    big_num_op = np.zeros((2**N , 2**N), dtype=complex)
-
-    for j in range(N):
-        big_num_op += Enlarge_Matrix_site_j(j,N,(numberop))
-    return big_num_op
+def build_number_op_list(N):
+    """
+    Builds a list of number operators, where each element corresponds
+    to the number operator acting on a specific site.
+    """
+    return [Enlarge_Matrix_site_j(j, N, numberop) for j in range(N)]
 
 def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
-
-    
+    num_ops_per_site = build_number_op_list(N)
+    total_num_op = sum(num_ops_per_site)
     L_K = []
     
     L_K.append(np.sqrt(gamma*(1-F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
@@ -91,8 +90,7 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
     rho_ss = NULL.reshape(2**N, 2**N)
     rho_ss = rho_ss / np.trace(rho_ss)
 
-    big_num_op = build_number_op(N, eps)
-    referenceN = np.trace(big_num_op @ rho_ss)
+    referenceN = np.trace((eps * total_num_op) @ rho_ss)
     print(f"Reference number operator expectation value: {referenceN}")
 
     # verify_density_matrix(rho_ss)
@@ -102,88 +100,59 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
     U = scipy.linalg.expm(Superoperator * dt)
 
     rho_t = initial_state.reshape(2**N * 2**N, 1)  # Vectorized  state
-    rho_vector = rho_t.reshape(2**N * 2**N, 1) 
-
-    initial_state_trace = np.trace(initial_state)
-
-    expectation_value_history = []
-    #Set lists
-    for site in range(N):
-            expectation_value_history.append([])
+    time_points = [0.0]
+    
+    # Initialize history list
+    expectation_value_history = [[] for _ in range(N)]
  #save num op for each site
  # add hopping
     # Document initial values    
-    for site_idx in range(N):
-        number_op = Enlarge_Matrix_site_j(site_idx, N, eps * numberop)
-        expectation_i = np.trace(number_op @ initial_state)
+    for site_idx, op in enumerate(num_ops_per_site):
+        expectation_i = np.trace((eps * op) @ initial_state)
         expectation_value_history[site_idx].append(expectation_i.real)
 
     print("Initial expectation value of number operator:", expectation_value_history[0])
-    time_points = [0]
+
 
     # Time evolution loop
     for step in range(1,nt+1):
         rho_t = U @ rho_t
         rho_matrix = rho_t.reshape(2**N ,2**N)
-        rho_matrix = rho_matrix / np.trace(rho_matrix)
+        rho_matrix /= np.trace(rho_matrix)
 
-        for site_idx in range(N):
-            number_operator = Enlarge_Matrix_site_j(site_idx, N, eps*numberop)
-            exp_val = np.trace(number_operator @ rho_matrix)
+        for site_idx, op in enumerate(num_ops_per_site):
+            exp_val = np.trace((eps * op) @ rho_matrix)
             expectation_value_history[site_idx].append(exp_val.real)
         time_points.append(step * dt)
 
 
-    return expectation_value_history, time_points, referenceN
+    return expectation_value_history, time_points
 
 
 
-def build_exact_diag_hamiltonian(N, eps):
+def build_exact_diag_hamiltonian(N):
     J = 1
-    # H = np.zeros((2**N , 2**N), dtype=complex)
 
-    # for j in range(N-1):
-    #     H += Enlarge_Matrix_site_j(j,N,(eps*Sigma_minus@Sigma_plus))
-   
     H = np.zeros((2**N, 2**N), dtype=complex)
 
-    # Loop over each adjacent pair of sites (0,1), (1,2), ..., (N-2, N-1)
-    for i in range(N - 1):
-        # Initialize the kronecker products for the two terms in the sum
-        op_term1 = 1.0  # Will become the J * σ⁺_i σ⁻_{i+1} term
-        op_term2 = 1.0  # Will become the J * σ⁻_i σ⁺_{i+1} term
 
-        # Build the full 2**N x 2**N operator for the current pair (i, i+1)
-        for j in range(N):
-            if j == i:
-                op_term1 = np.kron(op_term1, Sigma_plus)
-                op_term2 = np.kron(op_term2, Sigma_minus)
-            elif j == i+1:
-                op_term1 = np.kron(op_term1, Sigma_minus)
-                op_term2 = np.kron(op_term2, Sigma_plus)
-            else:
-                op_term1 = np.kron(op_term1, np.eye(2))
-                op_term2 = np.kron(op_term2, np.eye(2))
-        
-        # Add the two completed terms for this pair to the total Hamiltonian
-        H += J * (op_term1 + op_term2)
+    H = np.zeros((2**N, 2**N), dtype=complex)
+
+    for i in range(N - 1):
+        # Use the correlation matrix helper for a cleaner implementation
+        term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
+        term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
+        H += J * (term1 + term2)
         
     return H
 
 
-def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points, steadyState):
+def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points):
 
     plt.figure(figsize=(10, 6))
-    time_axis = np.linspace(0, time, nt+1)
-    mu_effective = (mu_L + mu_R) / 2
-    T_effective = (T_L + T_R) / 2
-    time_axis = np.linspace(0, time, nt+1)
-    #plt.plot(time_axis, [steadyState] * (nt + 1),
-     #        label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
-      #       linestyle='--', color='red')
+
     for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
         plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
-    #plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
 
     plt.title("Exact Diagonalization Results of two reserviors coupled to N qubits")
     plt.xlabel("Time (t)")
