@@ -104,6 +104,12 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
         
+        norm_squared = 1.0 
+        
+        psi_after_re = Statevector(ansatz.assign_parameters(init_param_values))
+        exp_val_H_imag = psi_after_re.expectation_value(ham_imag).real
+        norm_squared *= (1 + exp_val_H_imag * dt)
+
         # Imaginary evolution
         evolution_problem_im = TimeEvolutionProblem(ham_imag, dt / 2)
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
@@ -112,16 +118,31 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
 
          # Normalized so the trace is always 1
         
- 
-        current_psi = Statevector(ansatz.assign_parameters(init_param_values))
+        final_psi_normalized = Statevector(ansatz.assign_parameters(init_param_values))
+        
+        # Create the physically correct, unnormalized density matrix by scaling with the tracked norm
+        rho_unnormalized_vec = np.sqrt(norm_squared) * final_psi_normalized.data
+        rho_matrix = statevector_to_densitymatrix(rho_unnormalized_vec)
+        
+        # The trace of this matrix is the true trace of ρ, which should be close to 1
+        true_trace = np.trace(rho_matrix)
+        trace_list.append(true_trace.real)
+        
+        # The physical expectation value is Tr(n * ρ) / Tr(ρ)
+        exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]])) / true_trace
+        
+        # num_op_list.append(exp_val.real)
+        # current_psi = Statevector(ansatz.assign_parameters(init_param_values))
         
         
-        normalized_psi = current_psi / np.linalg.norm(current_psi.data)
-        trace = np.trace(statevector_to_densitymatrix(normalized_psi.data))
-        trace_list.append(1.0) # This should be very close to 1.0
-        exp_val = normalized_psi.expectation_value(num_op).real
+        # normalized_psi = current_psi / np.linalg.norm(current_psi.data)
+        # trace = np.trace(statevector_to_densitymatrix(normalized_psi.data))
+        # trace_list.append(1.0) # This should be very close to 1.0
+        # exp_val = normalized_psi.expectation_value(num_op).real
         num_op_list.append(exp_val.real)
         
+
+
     return num_op_list, trace_list
 
 def output_vqte_results(vqte_results, time, nt, eps, mu_L,mu_R,T_L, T_R):
