@@ -130,11 +130,9 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-    # --- Correctly initialize the results list ---
-    # Define the number operator for the system qubit (qubit 0)
+
     num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
     
-    # Calculate the initial expectation value using the correct method
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
     
@@ -154,13 +152,12 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
         
-        # --- Calculate and store the expectation value ---
+ 
         current_psi = Statevector(ansatz.assign_parameters(init_param_values))
 
-        # Renormalize the statevector after non-unitary imaginary evolution
-        #normalized_psi = current_psi / current_psi.norm()
+    
         normalized_psi = current_psi / np.linalg.norm(current_psi.data)
-        # Calculate the expectation value correctly
+      
         exp_val = normalized_psi.expectation_value(num_op).real
         num_op_list.append(exp_val)
         

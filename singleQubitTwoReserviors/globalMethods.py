@@ -17,37 +17,38 @@ def verify_density_matrix(rho):
     purity = np.trace(rho @ rho)
     print(f"Purity (Tr(ρ²)): {purity} (should be 1 for pure state)")
 
-# def build_initial_states(ham_real):
-#     ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
-#     init_param_values = {}
-#     for i in range(len(ansatz.parameters)):
-#         init_param_values[ansatz.parameters[i]] = (
-#         2*np.pi
-#     )  # initialize the parameters which also decide the initial state
-#     init_state = Statevector(ansatz.assign_parameters(init_param_values))
-    
-#     psi_vector = init_state.data
-#     rho_matrix = psi_vector.reshape(2 ,2, order='F')
-
-
-#     initial_state = np.matrix(rho_matrix)
-#     return init_state, ansatz, init_param_values
-#    # return init_state, initial_state, ansatz, init_param_values
 def build_initial_states(ham_real):
-  """
-  Initializes the ansatz and parameters with small random values.
-  """
-  ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+    num_qubits = ham_real.num_qubits
+    ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+    init_param_values = {}
+    for i in range(len(ansatz.parameters)):
+        init_param_values[ansatz.parameters[i]] = (
+        2*np.pi
+    )  # initialize the parameters which also decide the initial state
+    init_state = Statevector(ansatz.assign_parameters(init_param_values))
+    
+    psi_vector = init_state.data
+    # rho_matrix = psi_vector.reshape(2**num_qubits ,2**num_qubits, order='F')
+    rho_matrix = init_state.to_operator
+
+    initial_state = np.matrix(rho_matrix)
+    return init_state, initial_state, ansatz, init_param_values
+   # return init_state, initial_state, ansatz, init_param_values
+# def build_initial_states(ham_real):
+#   """
+#   Initializes the ansatz and parameters with small random values.
+#   """
+#   ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
   
-  # A better way to set initial parameters: small random values
-  # This prevents the gradient from being zero at the start.
-  np.random.seed(42) # Optional: for reproducible results
-  init_param_values = np.random.rand(ansatz.num_parameters) * 0.1 # Small random numbers
+#   # A better way to set initial parameters: small random values
+#   # This prevents the gradient from being zero at the start.
+#   np.random.seed(42) # Optional: for reproducible results
+#   init_param_values = np.random.rand(ansatz.num_parameters) * 0.1 # Small random numbers
 
-  # Create the state by binding the parameters to the ansatz
-  init_state = Statevector(ansatz.assign_parameters(init_param_values))
+#   # Create the state by binding the parameters to the ansatz
+#   init_state = Statevector(ansatz.assign_parameters(init_param_values))
 
-  return init_state, ansatz, init_param_values
+#   return init_state, ansatz, init_param_values
 
 def output_results(vqte_results, exact_diag_results, time, nt,time_points, trace_list,steadyState):
     plt.figure(figsize=(10, 6))
