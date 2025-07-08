@@ -28,8 +28,8 @@ def build_initial_states(ham_real):
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
     psi_vector = init_state.data
-    # rho_matrix = psi_vector.reshape(2**num_qubits ,2**num_qubits, order='F')
-    rho_matrix = init_state.to_operator
+    #rho_matrix = psi_vector.reshape(2**num_qubits ,2**num_qubits, order='F')
+    rho_matrix = init_state.to_operator()
 
     initial_state = np.matrix(rho_matrix)
     return init_state, initial_state, ansatz, init_param_values

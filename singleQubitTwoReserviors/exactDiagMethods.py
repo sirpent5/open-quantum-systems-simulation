@@ -88,11 +88,12 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     print(f"Reference number operator expectation value: {referenceN}")
 
     # verify_density_matrix(rho_ss)
-    verify_density_matrix(initial_state)
+    #verify_density_matrix(initial_state)
 
     # Create time evolution operator
+    d = len(H)
     U = scipy.linalg.expm(Superoperator * dt)
-    rho_t = initial_state.reshape(4,1)  # Vectorized  state
+    rho_t = initial_state.reshape(2**d,2**d)  # Vectorized  state
 
     expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
     print("Initial expectation value of number operator:", expectation_value_history[0])
@@ -101,7 +102,7 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     # Time evolution loop
     for step in range(1,nt+1):
         rho_t = U @ rho_t
-        rho_matrix = rho_t.reshape(2 ,2)
+        rho_matrix = rho_t.reshape(d ,d)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
         time_points.append(step * dt)
