@@ -16,42 +16,14 @@ def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
         hamiltonian_im: SparsePauliOp representing the imaginary part of the Hamiltonian of the system.
     """
 
-   # hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F)) / 4, -(gamma * (1 - 2*F)) / 4])
-    hamiltonian_re_coeffs = {
-        # System energy influenced by both reservoirs
-        "IIZ": -eps,
-        # Energy of Reservoir 1
-        "IZI": eps/ 2,
-        # Energy of Reservoir 2
-        "ZII": eps / 2,
-        # System <-> Reservoir 1 coupling
-        "XYI": -(gamma * F_L) / 4,
-        "YXI": -(gamma * F_L) / 4,
-        # System <-> Reservoir 2 coupling
-        "XIY": -(gamma * F_R) / 4,
-        "YIX": -(gamma * F_R) / 4, }
+    hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_R)) / 4, -(gamma * (1 - 2*F_R)) / 4])
+ 
+    hamiltonian_im_L = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_L)) / 4, (gamma * (1 - 2*F_L)) / 4])
+    hamiltonian_im_R = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_R)) / 4, (gamma * (1 - 2*F_R)) / 4])
+    hamiltonian_im = hamiltonian_im_L + hamiltonian_im_R
+    
+    ##Clean this so as not to  repeat ops and coefficients
 
-    hamiltonian_im_coeffs = {
-        # Global term from both reservoirs
-        "III": -gamma,
-        # System <-> Res 1 dissipative interaction
-        "XXI": gamma / 4,
-        "YYI": -gamma / 4,
-        # System <-> Res 2 dissipative interaction
-        "XIX": gamma / 4,
-        "YIY": -gamma / 4,
-        # Bias terms for System-Res1
-        "IIZ": (gamma * F_L) / 4 + (gamma * F_R) / 4, # System bias from both
-        "IZI": (gamma * F_L) / 4,                     # Res 1 bias
-        "ZII": (gamma * F_R) / 4,                     # Res 2 bias
-    }
-    hamiltonian_re = SparsePauliOp(list(hamiltonian_re_coeffs.keys()), coeffs=list(hamiltonian_re_coeffs.values()))
-    hamiltonian_im = -1 * SparsePauliOp(list(hamiltonian_im_coeffs.keys()), coeffs=list(hamiltonian_im_coeffs.values()))
-    
-    # hamiltonian_im = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F)) / 4, (gamma * (1 - 2*F)) / 4])
-    
-
-    
     return hamiltonian_re, hamiltonian_im
 
 def hamiltonian_generation_simple():
