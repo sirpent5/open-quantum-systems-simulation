@@ -93,7 +93,7 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     # Create time evolution operator
     d = len(H)
     U = scipy.linalg.expm(Superoperator * dt)
-    rho_t = initial_state.reshape(2**d,2**d)  # Vectorized  state
+    rho_t = initial_state.reshape(d**2,1)  # Vectorized  state
 
     expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
     print("Initial expectation value of number operator:", expectation_value_history[0])

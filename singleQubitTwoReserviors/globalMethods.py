@@ -32,6 +32,9 @@ def build_initial_states(ham_real):
     rho_matrix = init_state.to_operator()
 
     initial_state = np.matrix(rho_matrix)
+    print("The vqte init state is" ,init_state)
+    print("The exact diag initial state is ",initial_state)
+    print("Are you listening")
     return init_state, initial_state, ansatz, init_param_values
    # return init_state, initial_state, ansatz, init_param_values
 # def build_initial_states(ham_real):
