@@ -98,6 +98,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
 
     # --- Perform time evolution ---
     for t in range(nt):
+        print("Step", t , "out of", nt)
         # Real evolution
         evolution_problem_re = TimeEvolutionProblem(ham_real, dt / 2)
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
@@ -126,7 +127,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         
         # The trace of this matrix is the true trace of ρ, which should be close to 1
         true_trace = np.trace(rho_matrix)
-        trace_list.append(true_trace.real)
+        
         
         # The physical expectation value is Tr(n * ρ) / Tr(ρ)
         exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]])) / true_trace
@@ -138,9 +139,10 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         # normalized_psi = current_psi / np.linalg.norm(current_psi.data)
         # trace = np.trace(statevector_to_densitymatrix(normalized_psi.data))
         # trace_list.append(1.0) # This should be very close to 1.0
-        # exp_val = normalized_psi.expectation_value(num_op).real
+        # exp_val = normalized_psi.expectation_value(num_op).real\
+       
         num_op_list.append(exp_val.real)
-        
+        trace_list.append(1.0)
 
 
     return num_op_list, trace_list

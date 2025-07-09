@@ -99,6 +99,7 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
 
     # Time evolution loop
     for step in range(1,nt+1):
+        
         rho_t = U @ rho_t
         rho_matrix = rho_t.reshape(d ,d)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
