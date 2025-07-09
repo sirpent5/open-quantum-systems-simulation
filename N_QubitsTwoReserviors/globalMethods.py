@@ -34,7 +34,7 @@ def build_initial_states(ham_real, N):
     return init_state, initial_state, ansatz, init_param_values
 
 
-def output_results(vqte_results, exact_diag_results, time, nt,time_points)
+def output_results(vqte_results, exact_diag_results, time, nt,time_points):
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt+1)
 

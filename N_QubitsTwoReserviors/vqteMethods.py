@@ -114,7 +114,7 @@ def hamiltonian_generation_simple():
     """
     return SparsePauliOp(["IX", "XI"], coeffs=[1, -1])  # Example coefficients
 
-def statevector_to_densitymatrix(v):
+def statevector_to_densitymatrix(state_vector):
     """
     Converts a Statevector to a density matrix.
 
@@ -124,9 +124,8 @@ def statevector_to_densitymatrix(v):
     Returns:
         (numpy.ndarray) The corresponding density matrix.
     """
-    m = int(np.sqrt(len(v)))
-    return np.reshape(v, (m, m), order='F')
-
+    
+    return np.outer(state_vector, np.conj(state_vector))
 
 def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values,N):
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
@@ -163,7 +162,8 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
 
         # --- Measurement ---
         current_psi = Statevector(ansatz.assign_parameters(init_param_values))
-        normalized_psi = current_psi / current_psi.norm()
+        norm = np.linalg.norm(current_psi.data)
+        normalized_psi = current_psi / norm if norm != 0 else current_psi
 
         # Calculate expectation value for each qubit's number operator
         for i, op in enumerate(number_operators):
