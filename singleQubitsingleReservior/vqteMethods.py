@@ -62,13 +62,13 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
     for t in range(nt):
         # Real evolution
         
-        evolution_problem = TimeEvolutionProblem(ham_real, dt/2)
+        evolution_problem = TimeEvolutionProblem(ham_real, dt)
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
         evolution_result_re = var_qrte.evolve(evolution_problem)
         init_param_values = evolution_result_re.parameter_values[-1]
         
         # Imaginary evolution
-        evolution_problem = TimeEvolutionProblem(ham_imag, dt/2)
+        evolution_problem = TimeEvolutionProblem(ham_imag, dt)
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
         evolution_result_im = var_qite.evolve(evolution_problem)
         init_param_values = evolution_result_im.parameter_values[-1]
