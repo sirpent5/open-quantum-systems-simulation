@@ -17,14 +17,24 @@ def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
         hamiltonian_im: SparsePauliOp representing the imaginary part of the Hamiltonian of the system.
     """
 
-    hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_R)) / 4, -(gamma * (1 - 2*F_R)) / 4])
+    # hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_R)) / 4, -(gamma * (1 - 2*F_R)) / 4])
  
-    hamiltonian_im_L = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_L)) / 4, (gamma * (1 - 2*F_L)) / 4])
-    hamiltonian_im_R = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_R)) / 4, (gamma * (1 - 2*F_R)) / 4])
-    hamiltonian_im = hamiltonian_im_L + hamiltonian_im_R
+    # hamiltonian_im_L = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_L)) / 4, (gamma * (1 - 2*F_L)) / 4])
+    # hamiltonian_im_R = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_R)) / 4, (gamma * (1 - 2*F_R)) / 4])
+    # hamiltonian_im = hamiltonian_im_L + hamiltonian_im_R
     
-    ##Clean this so as not to  repeat ops and coefficients
 
+    common_coeff = -gamma / 2 * (1 - F_L - F_R)
+
+    hamiltonian_re = SparsePauliOp(
+        ["IZ", "ZI", "XY", "YX"],
+        coeffs=[-eps / 2, eps / 2, common_coeff, common_coeff]
+    )
+
+    hamiltonian_im = SparsePauliOp(
+        ["XX", "YY", "II", "IZ", "ZI"],
+        coeffs=[-gamma / 2, gamma / 2, gamma, common_coeff, common_coeff]
+    )
     return hamiltonian_re, hamiltonian_im
 
 def hamiltonian_generation_simple():
@@ -100,7 +110,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     for t in range(nt):
         print("Step", t , "out of", nt)
         # Real evolution
-        evolution_problem_re = TimeEvolutionProblem(ham_real, dt / 2)
+        evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
@@ -112,7 +122,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         norm_squared *= (1 + exp_val_H_imag * dt)
 
         # Imaginary evolution
-        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt / 2)
+        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
@@ -124,23 +134,11 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         # Create the physically correct, unnormalized density matrix by scaling with the tracked norm
         rho_unnormalized_vec = np.sqrt(norm_squared) * final_psi_normalized.data
         rho_matrix = statevector_to_densitymatrix(rho_unnormalized_vec)
-        
-        # The trace of this matrix is the true trace of ρ, which should be close to 1
+
         true_trace = np.trace(rho_matrix)
-        
-        
-        # The physical expectation value is Tr(n * ρ) / Tr(ρ)
+
         exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]])) / true_trace
         
-        # num_op_list.append(exp_val.real)
-        # current_psi = Statevector(ansatz.assign_parameters(init_param_values))
-        
-        
-        # normalized_psi = current_psi / np.linalg.norm(current_psi.data)
-        # trace = np.trace(statevector_to_densitymatrix(normalized_psi.data))
-        # trace_list.append(1.0) # This should be very close to 1.0
-        # exp_val = normalized_psi.expectation_value(num_op).real\
-       
         num_op_list.append(exp_val.real)
         trace_list.append(1.0)
 
