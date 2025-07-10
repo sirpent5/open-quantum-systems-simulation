@@ -131,7 +131,6 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
 
 
 def build_exact_diag_hamiltonian(N):
-    J = 1
 
     H = np.zeros((2**N, 2**N), dtype=complex)
 
@@ -142,7 +141,7 @@ def build_exact_diag_hamiltonian(N):
         # Use the correlation matrix helper for a cleaner implementation
         term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
         term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
-        H += J * (term1 + term2)
+        H += (term1 + term2)
         
     return H
 
@@ -163,24 +162,3 @@ def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, 
     plt.show()
 
 
-def generate_random_state(N):
-    """
-    Generate a random quantum state (density matrix) for N qubits.
-    
-    Parameters:
-        N (int): Number of qubits.
-        pure (bool): If True, returns a pure state (rank-1 density matrix).
-                    If False, returns a mixed state (default).
-    
-    Returns:
-        rho (np.ndarray): Random density matrix of shape (2^N, 2^N).
-    """
-    dim = 2**N
-    
- 
-        # Random mixed state (positive semi-definite, trace=1)
-    A = np.random.randn(dim, dim) + 1j * np.random.randn(dim, dim)
-    rho = A @ A.conj().T  # Positive semi-definite matrix
-    rho = rho / np.trace(rho)  # Normalize trace to 1
-    
-    return rho

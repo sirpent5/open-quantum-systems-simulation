@@ -21,7 +21,7 @@ from imports import *
 #     hamiltonian_im = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F)) / 4, (gamma * (1 - 2*F)) / 4])
     
 #     return hamiltonian_re, hamiltonian_im
-def hamiltonian_generation(N, eps, gamma, F_L, F_R):
+def hamiltonian_generation(N, J, eps, gamma, F_L, F_R):
     """
     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
 
@@ -39,7 +39,6 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R):
         (SparsePauliOp, SparsePauliOp): A tuple containing the real (Hermitian) and
                                          imaginary (dissipative) parts of the Hamiltonian.
     """
-
     re_paulis = []
     re_coeffs = []
     im_paulis = []
@@ -53,31 +52,48 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R):
         re_paulis.append("".join(pauli_str))
         re_coeffs.append(eps)
 
-    # NOTE: Nearest-neighbor XX and YY interaction terms have been removed.
+    # Nearest-neighbor XX and YY interaction terms
+    for i in range(N - 1):
+        # XX term
+        xx_pauli = ['I'] * N
+        xx_pauli[i] = 'X'
+        xx_pauli[i+1] = 'X'
+        re_paulis.append("".join(xx_pauli))
+        re_coeffs.append(J)
+
+        # YY term
+        yy_pauli = ['I'] * N
+        yy_pauli[i] = 'Y'
+        yy_pauli[i+1] = 'Y'
+        re_paulis.append("".join(yy_pauli))
+        re_coeffs.append(J)
 
     # 2. Build the imaginary part (H_im): The dissipative terms
+    # These terms model the coupling to the left and right reservoirs.
+
     # Identity term from both reservoirs
     im_paulis.append('I' * N)
-    im_coeffs.append(gamma / 2.0)
+    im_coeffs.append(-gamma / 2.0) # Note: The sign was flipped to represent dissipation correctly.
 
     # Left reservoir term acting on the first qubit (qubit 0)
     pauli_zl = ['I'] * N
     pauli_zl[0] = 'Z'
     im_paulis.append("".join(pauli_zl))
-    im_coeffs.append(-gamma / 4.0 * (1 - 2 * F_L))
+    im_coeffs.append(gamma / 2.0 * (1 - 2 * F_L))
 
     # Right reservoir term acting on the last qubit (qubit N-1)
     pauli_zr = ['I'] * N
     pauli_zr[N-1] = 'Z'
     im_paulis.append("".join(pauli_zr))
-    im_coeffs.append(-gamma / 4.0 * (1 - 2 * F_R))
+    im_coeffs.append(gamma / 2.0 * (1 - 2 * F_R))
 
-    # Create the SparsePauliOp objects
-    # Qiskit automatically sums coefficients for identical Pauli strings (e.g., if N=1)
-    hamiltonian_re = SparsePauliOp(re_paulis, coeffs=re_coeffs)
-    hamiltonian_im = SparsePauliOp(im_paulis, coeffs=im_coeffs)
+    # Construct the SparsePauliOp objects from the lists
+    h_re = SparsePauliOp(re_paulis, re_coeffs)
+    h_im = SparsePauliOp(im_paulis, im_coeffs)
 
-    return hamiltonian_re, hamiltonian_im
+    return h_re, h_im
+
+
 def create_number_operator(N, qubit_index):
     """
     Creates the number operator for a specific qubit in an N-qubit system.
