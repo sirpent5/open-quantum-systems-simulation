@@ -3,7 +3,7 @@
 # import numpy as np
 from imports import *
 
-def hamiltonian_generation(n, eps, gamma, F_L, F_R,j):
+def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
     """
     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
 
@@ -21,7 +21,7 @@ def hamiltonian_generation(n, eps, gamma, F_L, F_R,j):
         (SparsePauliOp, SparsePauliOp): A tuple containing the real (Hermitian) and
                                          imaginary (dissipative) parts of the Hamiltonian.
    """
-    
+    n = 2*N
     hopping_coeff = j * (1 - F_L - F_R)
     # 1. Build the real part (H_re): The system Hamiltonian
     # Coefficients for reservoir-coupled Z terms

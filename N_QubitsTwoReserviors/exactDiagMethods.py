@@ -155,7 +155,7 @@ def build_exact_diag_hamiltonian(N, j, eps):
         Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
               Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
         H += sign * (eps / 2) * Z_i
-        H += 1e-10 * np.eye(2**N)  
+     
     
     return H
 
