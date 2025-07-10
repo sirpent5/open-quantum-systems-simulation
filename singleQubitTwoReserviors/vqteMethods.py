@@ -2,7 +2,6 @@
 # from qiskit.quantum_info import SparsePauliOp
 # import numpy as np
 from imports import *
-from defs import numberop, Sigma_minus, Sigma_plus, Sigma_x, Sigma_y, Sigma_z
 def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
