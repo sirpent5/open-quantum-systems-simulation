@@ -34,16 +34,37 @@ def build_initial_states(ham_real, N):
     return init_state, initial_state, ansatz, init_param_values
 
 
-def output_results(vqte_results, exact_diag_results, time, nt,time_points):
-    plt.figure(figsize=(10, 6))
-    time_axis = np.linspace(0, time, nt+1)
+# def output_results(vqte_results, exact_diag_results, time, nt,time_points):
+#     plt.figure(figsize=(10, 6))
+#     time_axis = np.linspace(0, time, nt+1)
 
-    #plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
+#     #plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
     
-    # Plot Exact results
-    #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
-    plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
-    #plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
+#     # Plot Exact results
+#     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
+#     plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
+#     #plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
+#     plt.title("Comparison of VQTE and Exact Time Evolution")
+#     plt.xlabel("Time (t)")
+#     plt.ylabel("⟨n⟩ (Expectation Value)")
+#     plt.grid(True)
+#     plt.legend()
+    
+#     plt.show()
+def output_results(vqte_results, exact_diag_results, time, nt, time_points):
+    plt.figure(figsize=(10, 6))
+    time_axis = np.linspace(0, time, nt + 1)
+
+    # Convert results to NumPy arrays and transpose them.
+    # This reshapes data from (qubits, points) to (points, qubits),
+    # which matplotlib can plot directly against a 1D time axis.
+    exact_results_for_plot = np.asarray(exact_diag_results).T
+    vqte_results_for_plot = np.asarray(vqte_results).T
+
+    # Matplotlib will plot each column of the data as a separate line
+    plt.plot(time_points, exact_results_for_plot, linestyle='solid', label='Exact Result(s)')
+    plt.plot(time_axis, vqte_results_for_plot, linestyle='dashed', label='VQTE Result(s)')
+
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
