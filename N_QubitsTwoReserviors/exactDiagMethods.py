@@ -130,20 +130,35 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
 
 
 
-def build_exact_diag_hamiltonian(N):
+def build_exact_diag_hamiltonian(N, j, eps):
+
+    # H = np.zeros((2**N, 2**N), dtype=complex)
+
 
     H = np.zeros((2**N, 2**N), dtype=complex)
 
-
-    H = np.zeros((2**N, 2**N), dtype=complex)
+    # for i in range(N - 1):
+    #     # Use the correlation matrix helper for a cleaner implementation
+    #     term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
+    #     term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
+    #     H += j * (term1 + term2)
+        
 
     for i in range(N - 1):
-        # Use the correlation matrix helper for a cleaner implementation
         term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
         term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
-        H += (term1 + term2)
-        
+        H += j * (term1 + term2)
+    
+    # On-site energies (alternating signs)
+    for i in range(N):
+        sign = (-1)**i
+        Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
+              Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
+        H += sign * (eps / 2) * Z_i
+        H += 1e-10 * np.eye(2**N)  
+    
     return H
+
 
 
 def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points):

@@ -3,7 +3,7 @@
 # import numpy as np
 from imports import *
 
-def hamiltonian_generation(n, eps, gamma, F_L, F_R):
+def hamiltonian_generation(n, eps, gamma, F_L, F_R,j):
     """
     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
 
@@ -21,9 +21,9 @@ def hamiltonian_generation(n, eps, gamma, F_L, F_R):
         (SparsePauliOp, SparsePauliOp): A tuple containing the real (Hermitian) and
                                          imaginary (dissipative) parts of the Hamiltonian.
    """
+    
+    hopping_coeff = j * (1 - F_L - F_R)
     # 1. Build the real part (H_re): The system Hamiltonian
-    common_coeff = -gamma / 2 * (1 - F_L - F_R)
-
     # Coefficients for reservoir-coupled Z terms
     coeff_left = -gamma / 2 * (1 - F_L)   # Z on first qubit
     coeff_right = -gamma / 2 * (1 - F_R)   # Z on last qubit
@@ -34,7 +34,7 @@ def hamiltonian_generation(n, eps, gamma, F_L, F_R):
     pauli_list_im = []
     coeffs_im = []
 
-    # Single-qubit Z terms (alternating signs)
+    # Single-qubit Z terms 
     for i in range(n):
         sign = (-1) ** i
         z_term = ["I"] * n
@@ -42,23 +42,23 @@ def hamiltonian_generation(n, eps, gamma, F_L, F_R):
         pauli_list_re.append("".join(z_term))
         coeffs_re.append(sign * eps / 2)
 
-    # Nearest-neighbor XY and YX terms (all adjacent pairs)
+    # Nearest-neighbor XY and YX terms (scaled by j)
     for i in range(n - 1):
         # XY term
         xy_term = ["I"] * n
         xy_term[i] = "X"
         xy_term[i + 1] = "Y"
         pauli_list_re.append("".join(xy_term))
-        coeffs_re.append(common_coeff)
+        coeffs_re.append(hopping_coeff)
 
         # YX term
         yx_term = ["I"] * n
         yx_term[i] = "Y"
         yx_term[i + 1] = "X"
         pauli_list_re.append("".join(yx_term))
-        coeffs_re.append(common_coeff)
+        coeffs_re.append(hopping_coeff)
 
-    # Hamiltonian_im terms
+    # Hamiltonian_im terms 
     # Nearest-neighbor XX and YY terms
     for i in range(n - 1):
         # XX term
@@ -94,7 +94,6 @@ def hamiltonian_generation(n, eps, gamma, F_L, F_R):
     # Construct the Hamiltonians
     hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
     hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
-
     return hamiltonian_re, hamiltonian_im
 
 
