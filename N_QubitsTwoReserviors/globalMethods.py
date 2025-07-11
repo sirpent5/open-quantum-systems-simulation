@@ -19,6 +19,7 @@ def verify_density_matrix(rho):
 
 def build_initial_states(ham_real, N):
     ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+    print(ham_real.num_qubits)
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
         init_param_values[ansatz.parameters[i]] = (
@@ -27,23 +28,39 @@ def build_initial_states(ham_real, N):
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
     psi_vector = init_state.data
-    rho_matrix = np.outer(psi_vector, np.conj(psi_vector))
+    # initial_state = np.outer(psi_vector, np.conj(psi_vector))
+    rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
 
-    #For exact diag
+
     initial_state = np.matrix(rho_matrix)
-    return init_state, initial_state, ansatz, init_param_values
+    #For exact diag
 
+    return init_state, initial_state, ansatz, init_param_values
+def output_vqte_results(vqte_results, time, nt):
+    plt.figure(figsize=(10, 6))
+    time_axis = np.linspace(0, time, nt + 1)
+
+    vqte_results_for_plot = np.asarray(vqte_results).T
+   
+    plt.plot(time_axis, vqte_results_for_plot, linestyle='dashed', label='VQTE Result(s)')
+    plt.title("Comparison of VQTE and Exact Time Evolution")
+    plt.xlabel("Time (t)")
+    plt.ylabel("⟨n⟩ (Expectation Value)")
+    plt.grid(True)
+    plt.legend()
+    
+    plt.show()
 
 def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt + 1)
 
  
-    #exact_results_for_plot = np.asarray(exact_diag_results).T
+    exact_results_for_plot = np.asarray(exact_diag_results).T
     vqte_results_for_plot = np.asarray(vqte_results).T
-    #plt.plot(time_points, exact_results_for_plot, linestyle='solid', label='Exact Result(s)')
+   
     plt.plot(time_axis, vqte_results_for_plot, linestyle='dashed', label='VQTE Result(s)')
-
+    plt.plot(time_points, exact_results_for_plot, linestyle='solid', label='Exact Result(s)')
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")

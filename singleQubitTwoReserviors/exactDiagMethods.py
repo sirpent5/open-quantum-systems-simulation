@@ -116,8 +116,7 @@ def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, 
 
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt+1)
-    mu_effective = (mu_L + mu_R) / 2
-    T_effective = (T_L + T_R) / 2
+
     time_axis = np.linspace(0, time, nt+1)
     plt.plot(time_axis, [steadyState] * (nt + 1),
              label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
