@@ -73,75 +73,49 @@ def build_number_op_list(N):
     """
     return [Enlarge_Matrix_site_j(j, N, numberop) for j in range(N)]
 
-def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N,eps):
+def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state,H,N,eps):
 
     
-    num_ops_per_site = build_number_op_list(N)
-    total_num_op = sum(num_ops_per_site)
     L_K = []
-
+    
     L_K.append(np.sqrt(gamma*(1-F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
     L_K.append(np.sqrt(gamma*F_L)*Enlarge_Matrix_site_j(0, N, Sigma_plus)) 
     L_K.append(np.sqrt(gamma *(1-F_R))*Enlarge_Matrix_site_j(N-1, N, Sigma_minus))
     L_K.append(np.sqrt(gamma * F_R)*Enlarge_Matrix_site_j(N-1, N, Sigma_plus))
-
+     
     Superoperator = Liouvillian(H, L_K)
 
-    null = null_space(Superoperator)
-    NULL = null[:, 0]
-    rho_ss = NULL.reshape(2**N, 2**N)
-    rho_ss = rho_ss / np.trace(rho_ss)
 
-
-    # verify_density_matrix(rho_ss)
-    verify_density_matrix(initial_state)
 
     # Create time evolution operator
+    d = len(H)
     U = scipy.linalg.expm(Superoperator * dt)
+    rho_t = initial_state.reshape(d**2,1)  # Vectorized  state
 
-    rho_t = initial_state.reshape(2**N * 2**N, 1)  # Vectorized  state
+    number_ops = build_number_op_list(N)
 
-    expectation_value_history = []
-    #Set lists
-    for site in range(N):
-            expectation_value_history.append([])
-    time_points = [0.0]
-    
-    # Initialize history list
-    expectation_value_history = [[] for _ in range(N)]
- #save num op for each site
- # add hopping
-    # Document initial values    
-    for site_idx in range(N):
-        number_op = Enlarge_Matrix_site_j(site_idx, N, eps * numberop)
-        expectation_i = np.trace(number_op @ initial_state)
-    for site_idx, op in enumerate(num_ops_per_site):
-        expectation_i = np.trace((eps * op) @ initial_state)
-        expectation_value_history[site_idx].append(expectation_i.real)
+    expectation_value_history= [[] for qubit in range(N)]
 
-    print("Initial expectation value of number operator:", expectation_value_history[0])
     time_points = [0]
 
+    rho_matrix = initial_state / np.trace(initial_state)
+    for site in range(N):
+        expectation_value_history[site].append(np.trace(number_ops[site] @ rho_matrix))
 
+
+
+    print("Initial expectation value of number operator:", expectation_value_history[0])
     # Time evolution loop
     for step in range(1,nt+1):
+        
         rho_t = U @ rho_t
-        rho_matrix = rho_t.reshape(2**N ,2**N)
+        rho_matrix = rho_t.reshape(d ,d)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
-        rho_matrix /= np.trace(rho_matrix)
 
-        for site_idx in range(N):
-            number_operator = Enlarge_Matrix_site_j(site_idx, N, eps*numberop)
-            exp_val = np.trace(number_operator @ rho_matrix)
-        for site_idx, op in enumerate(num_ops_per_site):
-            exp_val = np.trace((eps * op) @ rho_matrix)
-            expectation_value_history[site_idx].append(exp_val.real)
+        for site in range(N)
+            expectation_value_history.append(np.trace(number_ops[site] @ rho_matrix))
         time_points.append(step * dt)
-
-
     return expectation_value_history, time_points
-
-
 
 def build_exact_diag_hamiltonian(N, j, eps):
 
