@@ -91,7 +91,7 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state,H,N,eps):
     d = len(H)
     U = scipy.linalg.expm(Superoperator * dt)
     rho_t = initial_state.reshape(d**2,1)  # Vectorized  state
-
+    print("cant anyone hear me")
     number_ops = build_number_op_list(N)
 
     expectation_value_history= [[] for qubit in range(N)]
