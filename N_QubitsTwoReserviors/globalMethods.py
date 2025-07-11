@@ -55,12 +55,11 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt + 1)
 
- 
-    exact_results_for_plot = np.asarray(exact_diag_results).T
+    #exact_results_for_plot = np.asarray(exact_diag_results).T
     vqte_results_for_plot = np.asarray(vqte_results).T
-   
     plt.plot(time_axis, vqte_results_for_plot, linestyle='dashed', label='VQTE Result(s)')
-    plt.plot(time_points, exact_results_for_plot, linestyle='solid', label='Exact Result(s)')
+    for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
+        plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")

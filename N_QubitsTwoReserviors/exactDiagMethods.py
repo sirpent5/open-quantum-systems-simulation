@@ -91,7 +91,6 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state,H,N,eps):
     d = len(H)
     U = scipy.linalg.expm(Superoperator * dt)
     rho_t = initial_state.reshape(d**2,1)  # Vectorized  state
-    print("cant anyone hear me")
     number_ops = build_number_op_list(N)
 
     expectation_value_history= [[] for qubit in range(N)]
@@ -111,9 +110,10 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state,H,N,eps):
         rho_t = U @ rho_t
         rho_matrix = rho_t.reshape(d ,d)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
-
-        for site in range(N)
-            expectation_value_history.append(np.trace(number_ops[site] @ rho_matrix))
+       
+        for site in range(N):
+            expectation_value_history[site].append(np.trace(number_ops[site] @ rho_matrix))
+            print(f"Step {step}: Tr(rho) = {np.trace(rho_matrix):.4f}, ⟨n⟩ = {(number_ops[site] @ rho_matrix):.4f}")
         time_points.append(step * dt)
     return expectation_value_history, time_points
 
