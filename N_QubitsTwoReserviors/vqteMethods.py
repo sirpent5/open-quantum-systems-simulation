@@ -153,17 +153,25 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
 
 # Initialize lists to store results
 #second is the is expectation value of the number operator
-
-
+   
     number_operators = [create_number_operator(N, i) for i in range(N)]
-
     # Perform time evolution
     results_history = [[] for _ in range(N)]
+
     print("Initial expectation values:")
     for i, op in enumerate(number_operators):
         initial_exp_val = init_state.expectation_value(op).real
         results_history[i].append(initial_exp_val)
         print(f"  Qubit {i}: {initial_exp_val:.4f}")
+
+    time_points = [0.0]
+    plt.ion()
+    fig = plt.subplots(figsize=(10, 6))
+    #update_live_plot(results_history, time_points, N)
+
+    plot_interval = 100
+
+
 
     # --- Time Evolution Loop ---
     for t in range(nt):
@@ -189,4 +197,38 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
             exp_val = normalized_psi.expectation_value(op).real
             results_history[i].append(exp_val)
 
+
+        time_points.append((t + 1) * dt)
+     # MODIFICATION: Call the live plot function
+        # plt.clf()
+        #if (t + 1) % plot_interval == 0 or t == nt - 1:
+            #update_live_plot(results_history, time_points, N)
+
+    # MODIFICATION: Finalize plotting
+    plt.ioff()
+    plt.title("Final VQTE Results")
+    plt.show()
+
+
     return results_history
+
+
+
+def update_live_plot(expectation_value_history, time_points, N):
+    """
+    Clears the current plot and redraws it with the updated data.
+    """
+    plt.clf()  # Clear the current figure
+    
+    for site_idx in range(N):
+        plt.plot(time_points, expectation_value_history[site_idx], label=f'Qubit {site_idx}', marker='o', markersize=3, linestyle='-')
+
+    plt.title("Live VQTE: Qubit Occupation")
+    plt.xlabel("Time (t)")
+    plt.ylabel("⟨n⟩ (Expectation Value)")
+    plt.grid(True)
+    plt.legend()
+    plt.ylim(-0.05, 1.05) # Keep axes stable
+    
+    plt.draw()
+    plt.pause(0.01)

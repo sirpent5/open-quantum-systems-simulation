@@ -59,7 +59,10 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     vqte_results_for_plot = np.asarray(vqte_results).T
     plt.plot(time_axis, vqte_results_for_plot, linestyle='dashed', label='VQTE Result(s)')
     for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
-        plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
+        if(site_idx % 2 == 0):
+            plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
+        else:
+            plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='dashed')
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
@@ -67,3 +70,27 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     plt.legend()
     
     plt.show()
+
+
+
+def update_live_plot(expectation_value_history, time_points, N):
+    """
+    Clears the current plot and redraws it with the updated data.
+    """
+    plt.clf()  # Clear the current figure to prepare for the new frame
+    
+    for site_idx in range(N):
+        # Plot the history for each site up to the current time
+        plt.plot(time_points, expectation_value_history[site_idx], label=f'Site {site_idx}', marker='o', markersize=3, linestyle='-')
+
+    plt.title("Live Exact Diagonalization: Qubit Occupation")
+    plt.xlabel("Time (t)")
+    plt.ylabel("⟨n⟩ (Expectation Value)")
+    plt.grid(True)
+    plt.legend()
+    
+    # Set fixed y-axis limits for stability, e.g., from 0 to 1 for occupation
+    plt.ylim(-0.05, 1.05) 
+    
+    plt.draw()
+    plt.pause(0.01) 
