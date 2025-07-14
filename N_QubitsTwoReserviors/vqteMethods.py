@@ -4,94 +4,6 @@
 from imports import *
 
 
-
-# def hamiltonian_generation(N, eps, gamma, beta_L, beta_R, j):
-#     """
-#     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain,
-#     following the Lindblad generator given in Theorem 2.3.
-
-#     Args:
-#         N (int): The number of qubits in the chain.
-#         eps (float): The on-site energy for each qubit (coefficient for Z terms).
-#         gamma (float): The coupling strength of the reservoirs.
-#         beta_L (float): Inverse temperature of the left bath.
-#         beta_R (float): Inverse temperature of the right bath.
-#         j (float): The hopping strength between qubits.
-
-#     Returns:
-#         (SparsePauliOp, SparsePauliOp): A tuple containing the real (Hermitian) and
-#                                         imaginary (dissipative) parts of the Hamiltonian.
-#     """
-#     n = 2 * N  # Number of qubits (assuming spin-1/2 particles)
-
-#     # Initialize empty lists for Pauli strings and coefficients
-#     pauli_list_re = []  # Real part (Hamiltonian)
-#     coeffs_re = []
-#     pauli_list_im = []  # Imaginary part (Dissipative terms)
-#     coeffs_im = []
-
-#     # 1. Real part: System Hamiltonian (Hₛ)
-#     # On-site energy terms (Z terms)
-#     for i in range(n):
-#         sign = (-1) ** i
-#         z_term = ["I"] * n
-#         z_term[i] = "Z"
-#         pauli_list_re.append("".join(z_term))
-#         coeffs_re.append(sign * eps / 2)
-
-#     # Hopping terms (XY and YX terms)
-#     for i in range(n - 1):
-#         # XY term
-#         xy_term = ["I"] * n
-#         xy_term[i] = "X"
-#         xy_term[i + 1] = "Y"
-#         pauli_list_re.append("".join(xy_term))
-#         coeffs_re.append(j)
-
-#         # YX term
-#         yx_term = ["I"] * n
-#         yx_term[i] = "Y"
-#         yx_term[i + 1] = "X"
-#         pauli_list_re.append("".join(yx_term))
-#         coeffs_re.append(j)
-
-#     # 2. Imaginary part: Dissipative terms (Lindblad terms)
-#     # Left bath terms (acting on the first qubit, i=0)
-#     # σ₋⁽¹⁾ = (X + iY)/2, σ₊⁽¹⁾ = (X - iY)/2
-#     # n₋⁽¹⁾ = σ₊⁽¹⁾σ₋⁽¹⁾, n₊⁽¹⁾ = σ₋⁽¹⁾σ₊⁽¹⁾
-
-#     # Term 1: 2σ₋⁽¹⁾Xσ₊⁽¹⁾ - {n₋⁽¹⁾, X}
-#     # For X = identity, this simplifies to -n₋⁽¹⁾
-#     # Represent n₋⁽¹⁾ = (I - Z)/2 on the first qubit
-#     n_minus_left = ["I"] * n
-#     n_minus_left[0] = "Z"
-#     pauli_list_im.append("".join(n_minus_left))
-#     coeffs_im.append(-gamma * beta_L / 2)  # Coefficient adjusted for Lindblad form
-
-#     # Term 2: 2σ₊⁽¹⁾Xσ₋⁽¹⁾ - {n₊⁽¹⁾, X}
-#     # For X = identity, this simplifies to -n₊⁽¹⁾
-#     # Represent n₊⁽¹⁾ = (I + Z)/2 on the first qubit
-#     n_plus_left = ["I"] * n
-#     n_plus_left[0] = "Z"
-#     pauli_list_im.append("".join(n_plus_left))
-#     coeffs_im.append(-gamma * beta_L / 2)
-
-#     # Right bath terms (acting on the last qubit, i=N-1)
-#     # Similarly for σ₋⁽ᴺ⁾ and σ₊⁽ᴺ⁾
-#     n_minus_right = ["I"] * n
-#     n_minus_right[-1] = "Z"
-#     pauli_list_im.append("".join(n_minus_right))
-#     coeffs_im.append(-gamma * beta_R / 2)
-
-#     n_plus_right = ["I"] * n
-#     n_plus_right[-1] = "Z"
-#     pauli_list_im.append("".join(n_plus_right))
-#     coeffs_im.append(-gamma * beta_R / 2)
-
-#     # Construct the Hamiltonians
-#     hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
-#     hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
-#     return hamiltonian_re, hamiltonian_im
 def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
     """
     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
@@ -253,14 +165,7 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
         results_history[i].append(initial_exp_val)
         print(f"  Qubit {i}: {initial_exp_val:.4f}")
 
-    time_points = [0.0]
-    plt.ion()
-    fig = plt.subplots(figsize=(10, 6))
-    #update_live_plot(results_history, time_points, N)
-
-    plot_interval = 100
-
-
+ 
 
     # --- Time Evolution Loop ---
     for t in range(nt):
@@ -287,37 +192,7 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
             results_history[i].append(exp_val)
 
 
-        time_points.append((t + 1) * dt)
-     # MODIFICATION: Call the live plot function
-        # plt.clf()
-        #if (t + 1) % plot_interval == 0 or t == nt - 1:
-            #update_live_plot(results_history, time_points, N)
 
-    # MODIFICATION: Finalize plotting
-    plt.ioff()
-    plt.title("Final VQTE Results")
-    plt.show()
 
 
     return results_history
-
-
-
-def update_live_plot(expectation_value_history, time_points, N):
-    """
-    Clears the current plot and redraws it with the updated data.
-    """
-    plt.clf()  # Clear the current figure
-    
-    for site_idx in range(N):
-        plt.plot(time_points, expectation_value_history[site_idx], label=f'Qubit {site_idx}', marker='o', markersize=3, linestyle='-')
-
-    plt.title("Live VQTE: Qubit Occupation")
-    plt.xlabel("Time (t)")
-    plt.ylabel("⟨n⟩ (Expectation Value)")
-    plt.grid(True)
-    plt.legend()
-    plt.ylim(-0.05, 1.05) # Keep axes stable
-    
-    plt.draw()
-    plt.pause(0.01)
