@@ -1,7 +1,5 @@
-
-# from qiskit.quantum_info import SparsePauliOp
-# import numpy as np
 from imports import *
+
 def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
@@ -36,14 +34,6 @@ def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
     )
     return hamiltonian_re, hamiltonian_im
 
-def hamiltonian_generation_simple():
-    """
-    Generates a simple Hamiltonian for a single qubit system.
-
-    Returns:
-        hamiltonian_re: SparsePauliOp representing the Hamiltonian.
-    """
-    return SparsePauliOp(["IX", "XI"], coeffs=[1, -1])  # Example coefficients
 
 def statevector_to_densitymatrix(v):
     """
