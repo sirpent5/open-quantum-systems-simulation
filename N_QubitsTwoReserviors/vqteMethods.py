@@ -2,73 +2,7 @@
 # from qiskit.quantum_info import SparsePauliOp
 # import numpy as np
 from imports import *
-# def hamiltonian_generation(n, eps, gamma, F_R, F_L):
-#     h_re_paulis = []
-#     h_re_coeffs = []
 
-#     # Add single-qubit Z terms for energy splitting
-#     for i in range(n):
-#         pauli_string = ['I'] * n
-#         pauli_string[i] = 'Z'
-#         h_re_paulis.append("".join(pauli_string))
-#         h_re_coeffs.append(-eps / 2)
-
-#     # Add nearest-neighbor XY and YX interactions
-#     for i in range(n - 1):
-#         for op in ["XY", "YX"]:
-#             pauli_string = ['I'] * n
-#             pauli_string[i] = op[0]
-#             pauli_string[i+1] = op[1]
-#             h_re_paulis.append("".join(pauli_string))
-#             h_re_coeffs.append(-gamma / 2)
-
-#     hamiltonian_re = SparsePauliOp(h_re_paulis, coeffs=h_re_coeffs)
-
-#     # --- Imaginary Part of the Hamiltonian ---
-#     h_im_paulis = []
-#     h_im_coeffs = []
-
-#     # Left reservoir coupling (qubit 0)
-#     # IZ term
-#     pauli_iz_L = ['I'] * n
-#     pauli_iz_L[0] = 'Z'
-#     h_im_paulis.append("".join(pauli_iz_L))
-#     h_im_coeffs.append(-gamma / 2 * (1 - 2 * F_L))
-    
-#     # XX and YY terms
-#     if n > 1:
-#         for op in ["XX", "YY"]:
-#             pauli_string = ['I'] * n
-#             pauli_string[0] = op[0]
-#             pauli_string[1] = op[1]
-#             h_im_paulis.append("".join(pauli_string))
-#             h_im_coeffs.append(-gamma / 4 if op == "XX" else gamma / 4)
-
-
-#     # Right reservoir coupling (qubit n-1)
-#     # ZI term (effectively)
-#     pauli_zi_R = ['I'] * n
-#     pauli_zi_R[n-1] = 'Z'
-#     h_im_paulis.append("".join(pauli_zi_R))
-#     h_im_coeffs.append(gamma / 2 * (1 - 2 * F_R))
-
-#     # XX and YY terms
-#     if n > 1:
-#         for op in ["XX", "YY"]:
-#             pauli_string = ['I'] * n
-#             pauli_string[n-2] = op[0]
-#             pauli_string[n-1] = op[1]
-#             h_im_paulis.append("".join(pauli_string))
-#             h_im_coeffs.append(-gamma / 4 if op == "XX" else gamma / 4)
-            
-#     # Identity terms for normalization
-#     h_im_paulis.append('I' * n)
-#     h_im_coeffs.append(gamma)
-
-
-#     hamiltonian_im = SparsePauliOp(h_im_paulis, coeffs=h_im_coeffs)
-
-#     return hamiltonian_re, hamiltonian_im
 
 
 def hamiltonian_generation(N, eps, gamma, F_L, F_R, hopping_coeff):
@@ -90,13 +24,8 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R, hopping_coeff):
                                          imaginary (dissipative) parts of the Hamiltonian.
    """
     n = 2*N
- 
-    # 1. Build the real part (H_re): The system Hamiltonian
-    # Coefficients for reservoir-coupled Z terms
-    coeff_left_0 = -gamma / 2 * (1 - F_L)   # Z on first qubit
-    coeff_left_1 = -gamma / 2 * F_L
-    coeff_right_0 = -gamma / 2 * (1 - F_R)   # Z on last qubit
-    coeff_right_1 = -gamma / 2 * F_R
+
+
 
     # Initialize empty lists for Pauli strings and coefficients
     pauli_list_re = []
@@ -106,70 +35,73 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R, hopping_coeff):
 
     # Single-qubit Z terms 
     for i in range(n):
-        sign = (-1) ** i
         z_term = ["I"] * n
         z_term[i] = "Z"
         pauli_list_re.append("".join(z_term))
-        coeffs_re.append(sign * eps / 2)
+        coeffs_re.append(eps/2)
 
-    # Nearest-neighbor XY and YX terms (scaled by j)
-    for i in range(n - 1):
-        # XY term
-        xy_term = ["I"] * n
-        xy_term[i] = "X"
-        xy_term[i + 1] = "Y"
-        pauli_list_re.append("".join(xy_term))
-        coeffs_re.append(hopping_coeff)
-
-        # YX term
-        yx_term = ["I"] * n
-        yx_term[i] = "Y"
-        yx_term[i + 1] = "X"
-        pauli_list_re.append("".join(yx_term))
-        coeffs_re.append(hopping_coeff)
-
-    # Hamiltonian_im terms 
-    # Nearest-neighbor XX and YY terms
     for i in range(n - 1):
         # XX term
         xx_term = ["I"] * n
         xx_term[i] = "X"
-        xx_term[i + 1] = "X"
-        pauli_list_im.append("".join(xx_term))
-        coeffs_im.append(-gamma / 2)
+        xx_term[i + 1] = "X"  
+        pauli_list_re.append("".join(xx_term))
+        coeffs_re.append(hopping_coeff)
 
         # YY term
         yy_term = ["I"] * n
         yy_term[i] = "Y"
-        yy_term[i + 1] = "Y"
-        pauli_list_im.append("".join(yy_term))
-        coeffs_im.append(gamma / 2)
+        yy_term[i + 1] = "Y"  # Should be 'Y'
+        pauli_list_re.append("".join(yy_term))
+        coeffs_re.append(hopping_coeff)
 
-    # Global II...I term (gamma)
-    pauli_list_im.append("I" * n)
-    coeffs_im.append(gamma)
-# Left boundary: Dissipation (loss)
-    z_left_loss = ["I"] * n
-    z_left_loss[0] = "Z"
-    pauli_list_im.append("".join(z_left_loss))
-    coeffs_im.append(coeff_left_0)  # -gamma/2 (1 - F_L)
+    # Hamiltonian_im terms 
 
-    # Left boundary: Pumping (gain)
-    z_left_gain = ["I"] * n
-    z_left_gain[0] = "Z"
-    pauli_list_im.append("".join(z_left_gain))
-    coeffs_im.append(coeff_left_1)  # -gamma/2 F_L
+   
+    # pauli_list_im.append("I" * n)
+    # coeffs_im.append(gamma / 2)
 
-    # Repeat for right boundary
-    z_right_loss = ["I"] * n
-    z_right_loss[-1] = "Z"
-    pauli_list_im.append("".join(z_right_loss))
-    coeffs_im.append(coeff_right_0)
+    x_left = ["I"] * n
+    x_left[0] = "X"
+    pauli_list_im.append("".join(x_left))
+    coeffs_im.append(-gamma * (1 - F_L) / 4)  # X part
 
-    z_right_gain = ["I"] * n
-    z_right_gain[-1] = "Z"
-    pauli_list_im.append("".join(z_right_gain))
-    coeffs_im.append(coeff_right_1)
+    y_left = ["I"] * n
+    y_left[0] = "Y"
+    pauli_list_im.append("".join(y_left))
+    coeffs_im.append(-gamma * (1 - F_L) / 4)
+
+    x_left_gain = ["I"] * n
+    x_left_gain[0] = "X"
+    pauli_list_im.append("".join(x_left_gain))
+    coeffs_im.append(-gamma * (1 - F_L))
+
+    y_left_gain = ["I"] * n
+    y_left_gain[0] = "Y"
+    pauli_list_im.append("".join(y_left_gain))
+    coeffs_im.append(gamma * F_L/4)  # Note sign flip for -iY
+
+
+    x_right = ["I"] * n
+    x_right[-1] = "X"
+    pauli_list_im.append("".join(x_right))
+    coeffs_im.append(-gamma * (1 - F_R) / 4)
+
+    y_right = ["I"] * n
+    y_right[-1] = "Y"
+    pauli_list_im.append("".join(y_right))
+    coeffs_im.append(-gamma * (1 - F_R) / 4)
+
+    x_right_gain = ["I"] * n
+    x_right_gain[-1] = "X"
+    pauli_list_im.append("".join(x_right_gain))
+    coeffs_im.append(-gamma * F_R / 4)
+
+    y_right_gain = ["I"] * n
+    y_right_gain[-1] = "Y"
+    pauli_list_im.append("".join(y_right_gain))
+    coeffs_im.append(gamma * F_R / 4)
+
     # Construct the Hamiltonians
     hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
     hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
