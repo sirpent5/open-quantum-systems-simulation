@@ -71,7 +71,7 @@ from imports import *
 #     return hamiltonian_re, hamiltonian_im
 
 
-def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
+def hamiltonian_generation(N, eps, gamma, F_L, F_R, hopping_coeff):
     """
     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
 
@@ -90,12 +90,13 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
                                          imaginary (dissipative) parts of the Hamiltonian.
    """
     n = 2*N
-    hopping_coeff = j
+ 
     # 1. Build the real part (H_re): The system Hamiltonian
     # Coefficients for reservoir-coupled Z terms
-    coeff_left = -gamma / 2 * (1 - F_L)   # Z on first qubit
-
-    coeff_right = -gamma / 2 * (1 - F_R)   # Z on last qubit
+    coeff_left_0 = -gamma / 2 * (1 - F_L)   # Z on first qubit
+    coeff_left_1 = -gamma / 2 * F_L
+    coeff_right_0 = -gamma / 2 * (1 - F_R)   # Z on last qubit
+    coeff_right_1 = -gamma / 2 * F_R
 
     # Initialize empty lists for Pauli strings and coefficients
     pauli_list_re = []
@@ -147,19 +148,28 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
     # Global II...I term (gamma)
     pauli_list_im.append("I" * n)
     coeffs_im.append(gamma)
+# Left boundary: Dissipation (loss)
+    z_left_loss = ["I"] * n
+    z_left_loss[0] = "Z"
+    pauli_list_im.append("".join(z_left_loss))
+    coeffs_im.append(coeff_left_0)  # -gamma/2 (1 - F_L)
 
-    # Left reservoir (Z on first qubit)
-    z_left = ["I"] * n
-    z_left[0] = "Z"
-    pauli_list_im.append("".join(z_left))
-    coeffs_im.append(coeff_left)
+    # Left boundary: Pumping (gain)
+    z_left_gain = ["I"] * n
+    z_left_gain[0] = "Z"
+    pauli_list_im.append("".join(z_left_gain))
+    coeffs_im.append(coeff_left_1)  # -gamma/2 F_L
 
-    # Right reservoir (Z on last qubit)
-    z_right = ["I"] * n
-    z_right[-1] = "Z"
-    pauli_list_im.append("".join(z_right))
-    coeffs_im.append(coeff_right)
+    # Repeat for right boundary
+    z_right_loss = ["I"] * n
+    z_right_loss[-1] = "Z"
+    pauli_list_im.append("".join(z_right_loss))
+    coeffs_im.append(coeff_right_0)
 
+    z_right_gain = ["I"] * n
+    z_right_gain[-1] = "Z"
+    pauli_list_im.append("".join(z_right_gain))
+    coeffs_im.append(coeff_right_1)
     # Construct the Hamiltonians
     hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
     hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
@@ -251,9 +261,6 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
         for i, op in enumerate(number_operators):
             exp_val = normalized_psi.expectation_value(op).real
             results_history[i].append(exp_val)
-
-
-
 
     return results_history
 

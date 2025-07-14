@@ -27,12 +27,17 @@ def build_initial_states(ham_real, N):
     )  # initialize the parameters which also decide the initial state
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
-    psi_vector = init_state.data
+    # psi_vector = init_state.data
 
-    rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
+    # rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
 
-    #initial_state = np.outer(psi_vector, psi_vector.conj())
-    initial_state = np.matrix(rho_matrix)
+    # #initial_state = np.outer(psi_vector, psi_vector.conj())
+    # initial_state = np.matrix(rho_matrix)
+
+    state = np.zeros(2**N, dtype=complex)
+    state[1] = 1.0  # Binary '00...01' (first qubit = |1⟩)
+
+    initial_state = np.outer(state, state.conj())  #
 
     #For exact diag
     return init_state, initial_state, ansatz, init_param_values

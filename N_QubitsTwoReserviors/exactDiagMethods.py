@@ -118,14 +118,6 @@ def build_number_op_list(N):
 #     return expectation_value_history, time_points
 
 def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
-    try:
-        # Debug: Check initial state validity
-        print("\n=== Debug: Initial Checks ===")
-        print(f"Initial state trace: {np.trace(initial_state)}")
-        assert np.isclose(np.trace(initial_state), 1.0, atol=1e-6), "Initial state not trace 1!"
-        assert np.allclose(initial_state, initial_state.conj().T), "Initial state not Hermitian!"
-        eigvals = np.linalg.eigvalsh(initial_state)
-        assert np.all(eigvals >= -1e-8), "Initial state has negative eigenvalues!"
 
         # Build Lindblad operators
         L_K = [
@@ -135,15 +127,10 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
             np.sqrt(gamma*F_R) * Enlarge_Matrix_site_j(N-1, N, Sigma_plus)
         ]
 
-        # Debug: Check Hamiltonian Hermiticity
-        assert np.allclose(H, H.conj().T), "Hamiltonian not Hermitian!"
-
         # Construct superoperator
         Superoperator = Liouvillian(H, L_K)
         d = len(H)
-        
-        # Debug: Check superoperator shape
-        print(f"Superoperator shape: {Superoperator.shape} (expected: {d**2}x{d**2})")
+
 
         # Time evolution operator
         U = scipy.linalg.expm(Superoperator * dt)
@@ -159,57 +146,22 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
         for site in range(N):
             expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
 
-        print("\n=== Debug: Starting Time Evolution ===")
         
         # Time evolution loop
         for step in range(1, nt+1):
-           
+        
                 rho_t = U @ rho_t
                 rho_matrix = rho_t.reshape(d, d, order='F')
-                
-                # Debug: Check trace and properties at each step
-                current_trace = np.trace(rho_matrix)
-                if not np.isclose(current_trace, 1.0, atol=1e-6):
-                    print(f"WARNING: Step {step} trace = {current_trace:.6f} (renormalizing)")
-                    rho_matrix /= current_trace
-                
-                if not np.allclose(rho_matrix, rho_matrix.conj().T):
-                    print(f"WARNING: Step {step} density matrix not Hermitian! Applying Hermitization.")
-                    rho_matrix = 0.5 * (rho_matrix + rho_matrix.conj().T)
-                
-                eigvals = np.linalg.eigvalsh(rho_matrix)
-                if np.any(eigvals < -1e-8):
-                    print(f"WARNING: Step {step} has negative eigenvalues! Clipping to 0.")
-                    eigvals = np.clip(eigvals, 0, None)
-                    eigvecs = np.linalg.eigh(rho_matrix)[1]
-                    rho_matrix = (eigvecs * eigvals) @ eigvecs.conj().T
-                    rho_matrix /= np.trace(rho_matrix)  # Renormalize after clipping
-
                 # Store results
                 for site in range(N):
                     expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
                 
                 time_points.append(step * dt)
    
-
-        print("\n=== Debug: Time Evolution Completed ===")
-        print(f"Final state trace: {np.trace(rho_matrix)}")
-        print(f"Final state eigenvalues: {np.linalg.eigvalsh(rho_matrix)}")
         
         return expectation_value_history, np.array(time_points)
 
-    except Exception as main_error:
-        print("\n!!! Main Procedure Error !!!")
-        print(str(main_error))
-        print("\n=== Debug Info ===")
-        if 'H' in locals():
-            print(f"Hamiltonian shape: {H.shape}")
-            print(f"H Hermitian check: {np.allclose(H, H.conj().T)}")
-        if 'Superoperator' in locals():
-            print(f"Superoperator shape: {Superoperator.shape}")
-        if 'rho_matrix' in locals():
-            print(f"Last rho_matrix trace: {np.trace(rho_matrix)}")
-        raise
+
 
 
 # def build_exact_diag_hamiltonian(N, j, eps):
