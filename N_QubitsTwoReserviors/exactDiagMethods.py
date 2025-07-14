@@ -163,7 +163,7 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
         
         # Time evolution loop
         for step in range(1, nt+1):
-            try:
+           
                 rho_t = U @ rho_t
                 rho_matrix = rho_t.reshape(d, d, order='F')
                 
@@ -190,18 +190,7 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
                     expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
                 
                 time_points.append(step * dt)
-                
-                # Progress reporting
-                if step % max(1, nt//10) == 0:
-                    print(f"Completed step {step}/{nt} (t = {step*dt:.2f}), max eigval: {np.max(eigvals):.4f}")
-            
-            except Exception as step_error:
-                print(f"\n!!! Error at step {step} !!!")
-                print(f"rho_matrix trace: {np.trace(rho_matrix)}")
-                print(f"rho_matrix Hermitian check: {np.allclose(rho_matrix, rho_matrix.conj().T)}")
-                if 'eigvals' in locals():
-                    print(f"Eigenvalues: {np.sort(eigvals)}")
-                raise step_error
+   
 
         print("\n=== Debug: Time Evolution Completed ===")
         print(f"Final state trace: {np.trace(rho_matrix)}")
@@ -221,138 +210,7 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
         if 'rho_matrix' in locals():
             print(f"Last rho_matrix trace: {np.trace(rho_matrix)}")
         raise
-# def build_exact_diag_hamiltonian(N, j, eps):
-#     """
-#     Builds the exact diagonalization Hamiltonian for a chain of N qubits.
-    
-#     Parameters:
-#     -----------
-#     N : int
-#         Number of qubits in the chain
-#     j : float
-#         Coupling strength between neighboring qubits
-#     eps : float
-#         On-site energy parameter
-        
-#     Returns:
-#     --------
-#     np.ndarray
-#         The Hamiltonian matrix (2^N x 2^N)
-        
-#     Raises:
-#     -------
-#     ValueError
-#         If inputs are invalid or Hamiltonian construction fails
-#     """
-#     H = np.zeros((2**N, 2**N), dtype=complex)
 
-#     # for i in range(N - 1):
-#     #     # Use the correlation matrix helper for a cleaner implementation
-#     #     term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
-#     #     term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
-#     #     H += j * (term1 + term2)
-        
-
-#     # for i in range(N - 1):
-#     #     term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
-#     #     term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
-#     #     H += j * (term1 + term2)
-    
-#     # # On-site energies (alternating signs)
-#     # for i in range(N):
-#     #     sign = (-1)**i
-#     #     Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
-#     #           Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
-#     #     H += sign * (eps / 2) * Z_i
-#     try:
-#         # Input validation
-#         if not isinstance(N, int) or N <= 0:
-#             raise ValueError(f"N must be positive integer, got {N}")
-#         if not isinstance(j, (int, float)):
-#             raise ValueError(f"j must be numeric, got {type(j)}")
-#         if not isinstance(eps, (int, float)):
-#             raise ValueError(f"eps must be numeric, got {type(eps)}")
-            
-#         print(f"\nBuilding Hamiltonian for N={N} qubits")
-#         print(f"Parameters: j={j}, ε={eps}")
-        
-#         dim = 2**N
-#         H = np.zeros((dim, dim), dtype=complex)
-        
-#         # Helper function to validate Hamiltonian terms
-#         def validate_term(term, description):
-#             if not term.shape == (dim, dim):
-#                 raise ValueError(f"{description} has wrong shape {term.shape}, expected {(dim, dim)}")
-#             if not np.allclose(term, term.conj().T):
-#                 print(f"WARNING: {description} not Hermitian! Applying Hermitization.")
-#                 term = 0.5 * (term + term.conj().T)
-#             return term
-        
-#         # Nearest-neighbor coupling terms
-#         print("\nConstructing coupling terms...")
-#         for i in range(N - 1):
-#             try:
-#                 term1 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_plus, Sigma_minus)
-#                 term2 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_minus, Sigma_plus)
-                
-#                 term1 = validate_term(term1, f"Term1 for sites ({i},{i+1})")
-#                 term2 = validate_term(term2, f"Term2 for sites ({i},{i+1})")
-                
-#                 H += j * (term1 + term2)
-#                 print(f"Added coupling terms for sites {i}-{i+1}")
-                
-#             except Exception as term_error:
-#                 print(f"!!! Error constructing terms for sites {i}-{i+1} !!!")
-#                 raise term_error
-        
-#         # On-site energy terms
-#         print("\nConstructing on-site energy terms...")
-#         for i in range(N):
-#             try:
-#                 sign = (-1)**i
-#                 Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
-#                       Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
-                
-#                 Z_i = validate_term(Z_i, f"On-site term {i}")
-                
-#                 H += sign * (eps / 2) * Z_i
-#                 print(f"Added on-site term for site {i} (sign: {'+' if sign > 0 else '-'})")
-                
-#             except Exception as onsite_error:
-#                 print(f"!!! Error constructing on-site term for site {i} !!!")
-#                 raise onsite_error
-        
-#         # Final Hamiltonian validation
-#         print("\nValidating final Hamiltonian...")
-#         if not np.allclose(H, H.conj().T):
-#             print("WARNING: Final Hamiltonian not Hermitian! Applying Hermitization.")
-#             H = 0.5 * (H + H.conj().T)
-        
-#         # Check if Hamiltonian is all zeros (construction likely failed)
-#         if np.allclose(H, 0):
-#             raise ValueError("Constructed Hamiltonian is all zeros - likely construction error")
-        
-#         print("✓ Hamiltonian construction successful")
-#         print(f"Final Hamiltonian shape: {H.shape}")
-#         print(f"Norm: {np.linalg.norm(H):.4f}")
-#         print(f"Trace: {np.trace(H):.4f}")
-        
-#         return H
-        
-#     except Exception as e:
-#         print("\n!!! Hamiltonian construction failed !!!")
-#         print(f"Error type: {type(e).__name__}")
-#         print(f"Error message: {str(e)}")
-        
-#         # Debug info
-#         if 'H' in locals():
-#             print("\nPartial Hamiltonian info:")
-#             print(f"Shape: {H.shape}")
-#             print(f"Norm: {np.linalg.norm(H)}")
-#             print("Matrix elements:")
-#             print(H)
-        
-#         raise ValueError("Failed to construct Hamiltonian") from e
 
 # def build_exact_diag_hamiltonian(N, j, eps):
 
@@ -379,28 +237,58 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
      
     
 #     return H
-def build_exact_diag_hamiltonian(N, j, eps):
+
+def build_exact_diag_hamiltonian(N, J, epsilon):
 
     dim = 2**N
     H = np.zeros((dim, dim), dtype=complex)
     
-    # Nearest-neighbor coupling terms
-    for i in range(N - 1):
-        term1 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_plus, Sigma_minus)
-        term2 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_minus, Sigma_plus)
-        H += j * (term1 + term2)
+    # On-site energy terms (ε a_j^† a_j)
+    for j in range(N):
+        # a_j^† a_j = (σ_j^+ σ_j^-) = (1 - σ_j^z)/2
+        Z_j = Enlarge_Matrix_site_j(j, N, Sigma_z)
+        H += epsilon * 0.5 * (np.eye(dim) - Z_j)
     
-    # On-site energy terms (alternating signs)
-    for i in range(N):
-        sign = (-1)**i
-        Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
-              Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
-        H += sign * (eps / 2) * Z_i
+    # Hopping terms (J a_j^† a_{j+1} + h.c.)
+    for j in range(N-1):
+        
+        JW_string = np.eye(dim)
+        for k in range(j):
+            JW_string = JW_string @ Enlarge_Matrix_site_j(k, N, Sigma_z)
+        
+        
+        term = (JW_string @ 
+                Enlarge_Matrix_site_j(j, N, Sigma_plus) @ 
+                Enlarge_Matrix_site_j(j+1, N, Sigma_minus))
+        
+        
+        H += J * (term + term.conj().T)
     
-    # Ensure Hermiticity
+ 
     H = 0.5 * (H + H.conj().T)
-    
     return H
+
+# def build_exact_diag_hamiltonian(N, j, eps):
+
+#     dim = 2**N
+#     H = np.zeros((dim, dim), dtype=complex)
+    
+#     # Nearest-neighbor coupling terms
+#     for i in range(N - 1):
+#         term1 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_plus, Sigma_minus)
+#         term2 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_minus, Sigma_plus)
+#         H += j * (term1 + term2)
+    
+#     # On-site energy terms (alternating signs)
+#     for i in range(N):
+#         sign = (-1)**i
+#         Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
+#               Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
+#         H += sign * (eps / 2) * Z_i
+    
+#     H = 0.5 * (H + H.conj().T)
+    
+#     return H
 def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points):
 
     plt.figure(figsize=(10, 6))

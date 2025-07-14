@@ -28,14 +28,15 @@ def build_initial_states(ham_real, N):
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
     psi_vector = init_state.data
-    # initial_state = np.outer(psi_vector, np.conj(psi_vector))
+
     rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
 
-
+    #initial_state = np.outer(psi_vector, psi_vector.conj())
     initial_state = np.matrix(rho_matrix)
 
     #For exact diag
     return init_state, initial_state, ansatz, init_param_values
+
 
 
 def output_results(vqte_results, exact_diag_results, time, nt, time_points):
@@ -43,13 +44,14 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     time_axis = np.linspace(0, time, nt + 1)
     vqte_results_for_plot = np.asarray(vqte_results).T
     #exact_results_for_plot = np.asarray(exact_diag_results).T
-    for site_idx, vqte_data in enumerate(vqte_results_for_plot):
-        plt.plot(time_axis, vqte_data, label=f'VQTE Site {site_idx}', linestyle='dashed', marker='x')
+    # for site_idx, vqte_data in enumerate(vqte_results_for_plot):
+    #     plt.plot(time_axis, vqte_data, label=f'VQTE Site {site_idx}', linestyle='dashed', marker='x')
     for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
-        if(site_idx % 2 == 0):
-            plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
-        else:
-           plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='dashed')
+            plt.plot(time_points, exact_diag_results[site_idx], label=f'Exact Diag Site {site_idx} Occupation', marker='', linestyle='dashed')
+
+    for site_idx in range(len(vqte_results)): # Iterate through each site's data
+            plt.plot(time_points, vqte_results[site_idx], label=f'VQTE Site {site_idx} Occupation', marker='', linestyle='solid')
+
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")

@@ -2,6 +2,73 @@
 # from qiskit.quantum_info import SparsePauliOp
 # import numpy as np
 from imports import *
+# def hamiltonian_generation(n, eps, gamma, F_R, F_L):
+#     h_re_paulis = []
+#     h_re_coeffs = []
+
+#     # Add single-qubit Z terms for energy splitting
+#     for i in range(n):
+#         pauli_string = ['I'] * n
+#         pauli_string[i] = 'Z'
+#         h_re_paulis.append("".join(pauli_string))
+#         h_re_coeffs.append(-eps / 2)
+
+#     # Add nearest-neighbor XY and YX interactions
+#     for i in range(n - 1):
+#         for op in ["XY", "YX"]:
+#             pauli_string = ['I'] * n
+#             pauli_string[i] = op[0]
+#             pauli_string[i+1] = op[1]
+#             h_re_paulis.append("".join(pauli_string))
+#             h_re_coeffs.append(-gamma / 2)
+
+#     hamiltonian_re = SparsePauliOp(h_re_paulis, coeffs=h_re_coeffs)
+
+#     # --- Imaginary Part of the Hamiltonian ---
+#     h_im_paulis = []
+#     h_im_coeffs = []
+
+#     # Left reservoir coupling (qubit 0)
+#     # IZ term
+#     pauli_iz_L = ['I'] * n
+#     pauli_iz_L[0] = 'Z'
+#     h_im_paulis.append("".join(pauli_iz_L))
+#     h_im_coeffs.append(-gamma / 2 * (1 - 2 * F_L))
+    
+#     # XX and YY terms
+#     if n > 1:
+#         for op in ["XX", "YY"]:
+#             pauli_string = ['I'] * n
+#             pauli_string[0] = op[0]
+#             pauli_string[1] = op[1]
+#             h_im_paulis.append("".join(pauli_string))
+#             h_im_coeffs.append(-gamma / 4 if op == "XX" else gamma / 4)
+
+
+#     # Right reservoir coupling (qubit n-1)
+#     # ZI term (effectively)
+#     pauli_zi_R = ['I'] * n
+#     pauli_zi_R[n-1] = 'Z'
+#     h_im_paulis.append("".join(pauli_zi_R))
+#     h_im_coeffs.append(gamma / 2 * (1 - 2 * F_R))
+
+#     # XX and YY terms
+#     if n > 1:
+#         for op in ["XX", "YY"]:
+#             pauli_string = ['I'] * n
+#             pauli_string[n-2] = op[0]
+#             pauli_string[n-1] = op[1]
+#             h_im_paulis.append("".join(pauli_string))
+#             h_im_coeffs.append(-gamma / 4 if op == "XX" else gamma / 4)
+            
+#     # Identity terms for normalization
+#     h_im_paulis.append('I' * n)
+#     h_im_coeffs.append(gamma)
+
+
+#     hamiltonian_im = SparsePauliOp(h_im_paulis, coeffs=h_im_coeffs)
+
+#     return hamiltonian_re, hamiltonian_im
 
 
 def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
@@ -27,6 +94,7 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
     # 1. Build the real part (H_re): The system Hamiltonian
     # Coefficients for reservoir-coupled Z terms
     coeff_left = -gamma / 2 * (1 - F_L)   # Z on first qubit
+
     coeff_right = -gamma / 2 * (1 - F_R)   # Z on last qubit
 
     # Initialize empty lists for Pauli strings and coefficients
@@ -112,8 +180,6 @@ def create_number_operator(N, qubit_index):
     Returns:
         SparsePauliOp: The number operator for the specified qubit.
     """
-    if not 0 <= qubit_index < N:
-        raise ValueError("qubit_index must be between 0 and N-1.")
 
     # Create the two necessary Pauli strings
     identity_str = 'I' * N
@@ -151,10 +217,6 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-
-# Initialize lists to store results
-#second is the is expectation value of the number operator
-   
     number_operators = [create_number_operator(N, i) for i in range(N)]
     # Perform time evolution
     results_history = [[] for _ in range(N)]
@@ -165,7 +227,6 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
         results_history[i].append(initial_exp_val)
         print(f"  Qubit {i}: {initial_exp_val:.4f}")
 
- 
 
     # --- Time Evolution Loop ---
     for t in range(nt):
@@ -194,5 +255,6 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
 
 
 
-
     return results_history
+
+
