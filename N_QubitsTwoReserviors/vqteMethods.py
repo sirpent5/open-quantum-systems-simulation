@@ -3,6 +3,95 @@
 # import numpy as np
 from imports import *
 
+
+
+# def hamiltonian_generation(N, eps, gamma, beta_L, beta_R, j):
+#     """
+#     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain,
+#     following the Lindblad generator given in Theorem 2.3.
+
+#     Args:
+#         N (int): The number of qubits in the chain.
+#         eps (float): The on-site energy for each qubit (coefficient for Z terms).
+#         gamma (float): The coupling strength of the reservoirs.
+#         beta_L (float): Inverse temperature of the left bath.
+#         beta_R (float): Inverse temperature of the right bath.
+#         j (float): The hopping strength between qubits.
+
+#     Returns:
+#         (SparsePauliOp, SparsePauliOp): A tuple containing the real (Hermitian) and
+#                                         imaginary (dissipative) parts of the Hamiltonian.
+#     """
+#     n = 2 * N  # Number of qubits (assuming spin-1/2 particles)
+
+#     # Initialize empty lists for Pauli strings and coefficients
+#     pauli_list_re = []  # Real part (Hamiltonian)
+#     coeffs_re = []
+#     pauli_list_im = []  # Imaginary part (Dissipative terms)
+#     coeffs_im = []
+
+#     # 1. Real part: System Hamiltonian (Hₛ)
+#     # On-site energy terms (Z terms)
+#     for i in range(n):
+#         sign = (-1) ** i
+#         z_term = ["I"] * n
+#         z_term[i] = "Z"
+#         pauli_list_re.append("".join(z_term))
+#         coeffs_re.append(sign * eps / 2)
+
+#     # Hopping terms (XY and YX terms)
+#     for i in range(n - 1):
+#         # XY term
+#         xy_term = ["I"] * n
+#         xy_term[i] = "X"
+#         xy_term[i + 1] = "Y"
+#         pauli_list_re.append("".join(xy_term))
+#         coeffs_re.append(j)
+
+#         # YX term
+#         yx_term = ["I"] * n
+#         yx_term[i] = "Y"
+#         yx_term[i + 1] = "X"
+#         pauli_list_re.append("".join(yx_term))
+#         coeffs_re.append(j)
+
+#     # 2. Imaginary part: Dissipative terms (Lindblad terms)
+#     # Left bath terms (acting on the first qubit, i=0)
+#     # σ₋⁽¹⁾ = (X + iY)/2, σ₊⁽¹⁾ = (X - iY)/2
+#     # n₋⁽¹⁾ = σ₊⁽¹⁾σ₋⁽¹⁾, n₊⁽¹⁾ = σ₋⁽¹⁾σ₊⁽¹⁾
+
+#     # Term 1: 2σ₋⁽¹⁾Xσ₊⁽¹⁾ - {n₋⁽¹⁾, X}
+#     # For X = identity, this simplifies to -n₋⁽¹⁾
+#     # Represent n₋⁽¹⁾ = (I - Z)/2 on the first qubit
+#     n_minus_left = ["I"] * n
+#     n_minus_left[0] = "Z"
+#     pauli_list_im.append("".join(n_minus_left))
+#     coeffs_im.append(-gamma * beta_L / 2)  # Coefficient adjusted for Lindblad form
+
+#     # Term 2: 2σ₊⁽¹⁾Xσ₋⁽¹⁾ - {n₊⁽¹⁾, X}
+#     # For X = identity, this simplifies to -n₊⁽¹⁾
+#     # Represent n₊⁽¹⁾ = (I + Z)/2 on the first qubit
+#     n_plus_left = ["I"] * n
+#     n_plus_left[0] = "Z"
+#     pauli_list_im.append("".join(n_plus_left))
+#     coeffs_im.append(-gamma * beta_L / 2)
+
+#     # Right bath terms (acting on the last qubit, i=N-1)
+#     # Similarly for σ₋⁽ᴺ⁾ and σ₊⁽ᴺ⁾
+#     n_minus_right = ["I"] * n
+#     n_minus_right[-1] = "Z"
+#     pauli_list_im.append("".join(n_minus_right))
+#     coeffs_im.append(-gamma * beta_R / 2)
+
+#     n_plus_right = ["I"] * n
+#     n_plus_right[-1] = "Z"
+#     pauli_list_im.append("".join(n_plus_right))
+#     coeffs_im.append(-gamma * beta_R / 2)
+
+#     # Construct the Hamiltonians
+#     hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
+#     hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
+#     return hamiltonian_re, hamiltonian_im
 def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
     """
     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
@@ -22,7 +111,7 @@ def hamiltonian_generation(N, eps, gamma, F_L, F_R,j):
                                          imaginary (dissipative) parts of the Hamiltonian.
    """
     n = 2*N
-    hopping_coeff = j * (1 - F_L - F_R)
+    hopping_coeff = j
     # 1. Build the real part (H_re): The system Hamiltonian
     # Coefficients for reservoir-coupled Z terms
     coeff_left = -gamma / 2 * (1 - F_L)   # Z on first qubit
