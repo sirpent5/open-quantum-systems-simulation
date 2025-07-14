@@ -40,28 +40,14 @@ def build_initial_states(ham_real):
 def output_results(vqte_results, exact_diag_results, time, nt,time_points, trace_list,steadyState, T1, T2, mu1,mu2,eps):
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt+1)
-    plt.plot(time_axis, [steadyState] * (nt + 1),
-             label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
-             linestyle='--', color='red')
-    plt.plot(time_axis, trace_list, label='Trace of Density Matrix')
-    #plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
+ 
     plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
     # Plot Exact results
     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
-    plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
+    plt.plot(time_axis/4, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
     steady_state_1 = 1 / (1 + np.exp((eps - mu1) / T1))
 
-# Calculate the second steady-state value
-    steady_state_2 = 1 / (1 + np.exp((eps - mu2) / T2))
 
-
-# Plot the first steady-state line
-    # --- Corrected Lines ---
-    plt.plot(time_axis, [steady_state_1] * (nt + 1), 
-     label=f'Steady State 1', linestyle='--')
-
-    plt.plot(time_axis, [steady_state_2] * (nt + 1), 
-     label=f'Steady State (T={T2}, μ={mu2})', linestyle='--')
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")

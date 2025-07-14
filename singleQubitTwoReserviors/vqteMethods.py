@@ -1,6 +1,6 @@
 from imports import *
 
-def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
+def hamiltonian_generation(eps, gamma, F_R,F_L):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
     
@@ -21,16 +21,18 @@ def hamiltonian_generation(eps, gamma, F_R,F_L,mu_L,mu_R):
     # hamiltonian_im = hamiltonian_im_L + hamiltonian_im_R
     
 
-    common_coeff = -gamma / 2 * (1 - F_L - F_R)
+    common_coeff_0 = (-gamma * (1- (2*F_R)))/4 -(gamma * (1- (2*F_L)))/4
+    common_coeff_1 = (-gamma * (1- (2*F_R)))/4 -(gamma * (1- (2*F_L)))/4
+
 
     hamiltonian_re = SparsePauliOp(
         ["IZ", "ZI", "XY", "YX"],
-        coeffs=[-eps / 2, eps / 2, common_coeff, common_coeff]
+        coeffs=[-eps / 2, eps / 2, common_coeff_0, common_coeff_0]
     )
 
     hamiltonian_im = SparsePauliOp(
         ["XX", "YY", "II", "IZ", "ZI"],
-        coeffs=[-gamma / 2, gamma / 2, gamma, common_coeff, common_coeff]
+        coeffs=[-gamma / 2, gamma / 2, gamma, common_coeff_1, common_coeff_1]
     )
     return hamiltonian_re, hamiltonian_im
 
@@ -69,7 +71,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     for t in range(nt):
         print("Step", t , "out of", nt)
         # Real evolution
-        evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
+        evolution_problem_re = TimeEvolutionProblem(ham_real, dt/2 )
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
@@ -81,7 +83,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         norm_squared *= (1 + exp_val_H_imag * dt)
 
         # Imaginary evolution
-        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
+        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt/2 )
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
