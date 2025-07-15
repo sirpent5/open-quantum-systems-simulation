@@ -37,15 +37,12 @@ def build_initial_states(ham_real):
 
         return init_state, initial_state, ansatz, init_param_values
 
-def output_results(vqte_results, exact_diag_results, time, nt,time_points, T1, T2, mu1,mu2,eps):
+def output_results(vqte_results, exact_diag_results, time, nt,time_points):
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt+1)
  
-    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
-    # Plot Exact results
-    #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
+    plt.plot(time_points, exact_diag_results, label='Exact Diag Result', marker='', linestyle='solid')
     plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
-    steady_state_1 = 1 / (1 + np.exp((eps - mu1) / T1))
 
 
     plt.title("Comparison of VQTE and Exact Time Evolution")

@@ -54,7 +54,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-    trace_list = [1.0]
+
     num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
     
     initial_exp_val = init_state.expectation_value(num_op).real
@@ -96,10 +96,10 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]])) / true_trace
         
         num_op_list.append(exp_val.real)
-        trace_list.append(1.0)
 
 
-    return num_op_list, trace_list
+
+    return num_op_list
 
 def output_vqte_results(vqte_results, time, nt, eps, mu_L,mu_R,T_L, T_R):
 
