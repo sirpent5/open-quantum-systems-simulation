@@ -71,7 +71,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     for t in range(nt):
         print("Step", t , "out of", nt)
         # Real evolution
-        evolution_problem_re = TimeEvolutionProblem(ham_real, dt/2 )
+        evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
@@ -83,7 +83,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         norm_squared *= (1 + exp_val_H_imag * dt)
 
         # Imaginary evolution
-        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt/2 )
+        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]

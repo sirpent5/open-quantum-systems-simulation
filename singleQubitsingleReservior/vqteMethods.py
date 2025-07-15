@@ -22,14 +22,6 @@ def hamiltonian_generation(eps, gamma, mu, T):
     
     return hamiltonian_re, hamiltonian_im
 
-def hamiltonian_generation_simple():
-    """
-    Generates a simple Hamiltonian for a single qubit system.
-
-    Returns:
-        hamiltonian_re: SparsePauliOp representing the Hamiltonian.
-    """
-    return SparsePauliOp(["IX", "XI"], coeffs=[1, -1])  # Example coefficients
 
 def statevector_to_densitymatrix(v):
     """

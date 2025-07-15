@@ -22,8 +22,9 @@ def build_initial_states(ham_real):
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
         init_param_values[ansatz.parameters[i]] = (
-        2*np.pi
-    )  # initialize the parameters which also decide the initial state
+        2*np.pi)
+      
+      # initialize the parameters which also decide the initial state
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
     psi_vector = init_state.data
