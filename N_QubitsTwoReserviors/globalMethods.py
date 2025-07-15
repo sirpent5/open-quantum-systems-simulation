@@ -31,13 +31,13 @@ def build_initial_states(ham_real, N):
      # initialize the parameters which also decide the initial state
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
-    psi_vector = init_state.data
+    # psi_vector = init_state.data
 
-    rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
-    initial_state = np.matrix(rho_matrix)
+    # rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
+    # initial_state = np.matrix(rho_matrix)
 
 
-
+    initial_state = []
     # #initial_state = np.outer(psi_vector, psi_vector.conj())
     # state = np.zeros(2**N, dtype=complex)
     # state[1] = 1.0  # Binary '00...01' (first qubit = |1⟩)
@@ -47,28 +47,6 @@ def build_initial_states(ham_real, N):
     #For exact diag
     return init_state, initial_state, ansatz, init_param_values
 
-
-
-# def output_results(vqte_results, exact_diag_results, time, nt, time_points):
-#     plt.figure(figsize=(10, 6))
-#     time_axis = np.linspace(0, time, nt + 1)
-#     vqte_results_for_plot = np.asarray(vqte_results).T
-#     #exact_results_for_plot = np.asarray(exact_diag_results).T
-#     # for site_idx, vqte_data in enumerate(vqte_results_for_plot):
-#     #     plt.plot(time_axis, vqte_data, label=f'VQTE Site {site_idx}', linestyle='dashed', marker='x')
-#     for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
-#             plt.plot(time_points, exact_diag_results[site_idx], label=f'Exact Diag Site {site_idx} Occupation', marker='', linestyle='dashed')
-
-#     for site_idx in range(len(vqte_results)): # Iterate through each site's data
-#             plt.plot(time_points, vqte_results[site_idx], label=f'VQTE Site {site_idx} Occupation', marker='', linestyle='solid')
-
-#     plt.title("Comparison of VQTE and Exact Time Evolution")
-#     plt.xlabel("Time (t)")
-#     plt.ylabel("⟨n⟩ (Expectation Value)")
-#     plt.grid(True)
-#     plt.legend()
-    
-#     plt.show()
 
 def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     """
@@ -81,13 +59,13 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
 
     # Plot Exact Diagonalization Results
     # Ensure the time axis slice matches the length of the results data
-    for site_idx in range(len(exact_diag_results)):
-        num_points = len(exact_diag_results[site_idx])
-        plt.plot(time_axis[:num_points], 
-                 exact_diag_results[site_idx], 
-                 label=f'Exact Diag Site {site_idx} Occupation', 
-                 marker='', 
-                 linestyle='dashed')
+    # for site_idx in range(len(exact_diag_results)):
+    #     num_points = len(exact_diag_results[site_idx])
+    #     plt.plot(time_axis[:num_points], 
+    #              exact_diag_results[site_idx], 
+    #              label=f'Exact Diag Site {site_idx} Occupation', 
+    #              marker='', 
+    #              linestyle='dashed')
 
     # Plot VQTE Results
     # Ensure the time axis slice matches the length of the results data

@@ -3,109 +3,152 @@
 # import numpy as np
 from imports import *
 
+import numpy as np
+from qiskit.quantum_info import SparsePauliOp
 
-
-def hamiltonian_generation(N, eps, gamma, F_L, F_R, hopping_coeff):
-    """
-    Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
-
-    The real part corresponds to on-site energy terms. The imaginary part corresponds 
-    to dissipation from reservoirs coupled to the first and last qubits.
-
-    Args:
-        N (int): The number of qubits in the chain.
-        eps (float): The on-site energy for each qubit (coefficient for Z terms).
-        gamma (float): The coupling strength of the reservoirs.
-        F_L (float): The Fermi-Dirac distribution factor for the left reservoir.
-        F_R (float): The Fermi-Dirac distribution factor for the right reservoir.
-
-    Returns:
-        (SparsePauliOp, SparsePauliOp): A tuple containing the real (Hermitian) and
-                                         imaginary (dissipative) parts of the Hamiltonian.
-   """
-    n = 2*N
-
-
-
+def hamiltonian_generation(n, eps, gamma_L, gamma_R, F_L, F_R, t):
     # Initialize empty lists for Pauli strings and coefficients
+ 
+    n = 2*n
+
     pauli_list_re = []
     coeffs_re = []
     pauli_list_im = []
     coeffs_im = []
 
-    # Single-qubit Z terms 
+
     for i in range(n):
-        z_term = ["I"] * n
-        z_term[i] = "Z"
-        pauli_list_re.append("".join(z_term))
-        coeffs_re.append(eps/2)
-
-    for i in range(n - 1):
-        # XX term
-        xx_term = ["I"] * n
-        xx_term[i] = "X"
-        xx_term[i + 1] = "X"  
-        pauli_list_re.append("".join(xx_term))
-        coeffs_re.append(hopping_coeff)
-
-        # YY term
-        yy_term = ["I"] * n
-        yy_term[i] = "Y"
-        yy_term[i + 1] = "Y"  # Should be 'Y'
-        pauli_list_re.append("".join(yy_term))
-        coeffs_re.append(hopping_coeff)
-
-    # Hamiltonian_im terms 
-
-   
-    # pauli_list_im.append("I" * n)
-    # coeffs_im.append(gamma / 2)
-
-    x_left = ["I"] * n
-    x_left[0] = "X"
-    pauli_list_im.append("".join(x_left))
-    coeffs_im.append(-gamma * (1 - F_L) / 4)  # X part
-
-    y_left = ["I"] * n
-    y_left[0] = "Y"
-    pauli_list_im.append("".join(y_left))
-    coeffs_im.append(-gamma * (1 - F_L) / 4)
-
-    x_left_gain = ["I"] * n
-    x_left_gain[0] = "X"
-    pauli_list_im.append("".join(x_left_gain))
-    coeffs_im.append(-gamma * (1 - F_L))
-
-    y_left_gain = ["I"] * n
-    y_left_gain[0] = "Y"
-    pauli_list_im.append("".join(y_left_gain))
-    coeffs_im.append(gamma * F_L/4)  # Note sign flip for -iY
+        z_term = ['I'] * n
+        z_term[i] = 'Z'
+        pauli_str = ''.join(z_term)
+        pauli_list_re.extend([pauli_str, pauli_str])
+        coeffs_re.extend([-eps/2, eps/2])
 
 
-    x_right = ["I"] * n
-    x_right[-1] = "X"
-    pauli_list_im.append("".join(x_right))
-    coeffs_im.append(-gamma * (1 - F_R) / 4)
 
-    y_right = ["I"] * n
-    y_right[-1] = "Y"
-    pauli_list_im.append("".join(y_right))
-    coeffs_im.append(-gamma * (1 - F_R) / 4)
 
-    x_right_gain = ["I"] * n
-    x_right_gain[-1] = "X"
-    pauli_list_im.append("".join(x_right_gain))
-    coeffs_im.append(-gamma * F_R / 4)
+    for i in range(n-1):
+        # Left reservoir affects only qubit 1 
+        gamma_ij_L = gamma_L if i == 0 else 0
+        F_ij_L = F_L if i == 0 else 0
+        # Right reservoir affects only qubit n 
+        gamma_ij_R = gamma_R if i == n-1 else 0
+        F_ij_R = F_R if i == n-1 else 0
 
-    y_right_gain = ["I"] * n
-    y_right_gain[-1] = "Y"
-    pauli_list_im.append("".join(y_right_gain))
-    coeffs_im.append(gamma * F_R / 4)
+        xy_term = ['I'] * n
+        xy_term[i] = 'X'
+        xy_term[i+1] = 'Y'
+        pauli_str_xy = ''.join(xy_term)
 
-    # Construct the Hamiltonians
+        yx_term = ['I'] * n
+        yx_term[i] = 'Y'
+        yx_term[i+1] = 'X'
+        pauli_str_yx = ''.join(yx_term)
+
+        coeff = -0.25 * (gamma_ij_L * (1 - 2*F_ij_L) + gamma_ij_R * (1 - 2*F_ij_R))
+        pauli_list_re.extend([pauli_str_xy, pauli_str_yx])
+        coeffs_re.extend([coeff, coeff])
+
+    ### NEW: Add nearest-neighbor hopping (tunneling) terms (X_i X_j + Y_i Y_j)
+    for i in range(n-1):
+        xx_term = ['I'] * n
+        xx_term[i] = 'X'
+        xx_term[i+1] = 'X'
+        pauli_str_xx = ''.join(xx_term)
+
+        yy_term = ['I'] * n
+        yy_term[i] = 'Y'
+        yy_term[i+1] = 'Y'
+        pauli_str_yy = ''.join(yy_term)
+
+        pauli_list_re.extend([pauli_str_xx, pauli_str_yy])
+        coeffs_re.extend([t, t])  # Jumping coefficient t
+
+    # Nearest-neighbor XX/YY interactions (imaginary part)
+    for i in range(n-1):
+        gamma_ij = gamma_L if i == 0 else (gamma_R if i == n-2 else 0)
+
+        xx_term = ['I'] * n
+        xx_term[i] = 'X'
+        xx_term[i+1] = 'X'
+        pauli_str_xx = ''.join(xx_term)
+
+        yy_term = ['I'] * n
+        yy_term[i] = 'Y'
+        yy_term[i+1] = 'Y'
+        pauli_str_yy = ''.join(yy_term)
+
+        pauli_list_im.extend([pauli_str_xx, pauli_str_yy])
+        coeffs_im.extend([-gamma_ij/4, gamma_ij/4])
+
+    # Global identity term (imaginary part)
+    pauli_list_im.append('I' * n)
+    coeffs_im.append((gamma_L + gamma_R)/2)
+
+    # Boundary Z terms (left/right reservoirs)
+    z_left = ['I'] * n
+    z_left[0] = 'Z'
+    pauli_str_zL = ''.join(z_left)
+    coeff_zL = -0.25 * (gamma_L * (1 - 2*F_L))
+
+    z_right = ['I'] * n
+    z_right[-1] = 'Z'
+    pauli_str_zR = ''.join(z_right)
+    coeff_zR = -0.25 * (gamma_R * (1 - 2*F_R))
+
+    pauli_list_im.extend([pauli_str_zL, pauli_str_zR])
+    coeffs_im.extend([coeff_zL, coeff_zR])
+
+    # Construct SparsePauliOp
     hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
     hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
+
     return hamiltonian_re, hamiltonian_im
+
+# def hamiltonian_generation(N, eps, gamma_L, gamma_R, F_L, F_R, J):
+#     """
+#     Generates the real and imaginary parts of an effective Hamiltonian for an N-qubit chain.
+
+#     The real part corresponds to on-site energy terms. The imaginary part corresponds 
+#     to dissipation from reservoirs coupled to the first and last qubits.
+
+#     Args:
+#         N (int): The number of qubits in the chain.
+#         eps (float): The on-site energy for each qubit (coefficient for Z terms).
+#         gamma (float): The coupling strength of the reservoirs.
+#         F_L (float): The Fermi-Dirac distribution factor for the left reservoir.
+#         F_R (float): The Fermi-Dirac distribution factor for the right reservoir.
+
+#     Returns:
+#         (SparsePauliOp, SparsePauliOp): A tuple containing the real (Hermitian) and
+#                                          imaginary (dissipative) parts of the Hamiltonian.
+#    """
+  
+
+#     # Initialize empty lists for Pauli strings and coefficients
+#     pauli_list_re = []
+#     coeffs_re = []
+#     pauli_list_im = []
+#     coeffs_im = []
+
+#     for site in range(N):
+#             hamiltonian_on_site = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
+#             coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
+#         )
+
+
+#     hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
+#         coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
+#                  ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
+
+
+
+
+
+#     # Construct the Hamiltonians
+#     hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
+#     hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
+#     return hamiltonian_re, hamiltonian_im
 
 
 def create_number_operator(N, qubit_index):
