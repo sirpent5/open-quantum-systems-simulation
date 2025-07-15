@@ -79,19 +79,11 @@ def perform_exact_diag(gamma_L, gamma_R, F_L,F_R, dt, nt, initial_state, H, N):
      
     Superoperator = Liouvillian(H, L_K)
 
-    null = null_space(Superoperator)
-    NULL = null[:, 0]
-    rho_ss = NULL.reshape(2**N, 2**N)
-    rho_ss = rho_ss / np.trace(rho_ss)
-
-    referenceN = np.trace(numberop @ rho_ss)
-    print(f"Reference number operator expectation value: {referenceN}")
   
-
-    # Create time evolution operator
    
     U = scipy.linalg.expm(Superoperator * dt)
-    rho_t = initial_state.reshape(4,1)  # Vectorized  state
+    rho_t = initial_state.reshape(4,1)
+
 
     expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
     print("Initial expectation value of number operator:", expectation_value_history[0])
@@ -105,24 +97,10 @@ def perform_exact_diag(gamma_L, gamma_R, F_L,F_R, dt, nt, initial_state, H, N):
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
         time_points.append(step * dt)
-    return expectation_value_history, time_points, referenceN
-
-
-
-
-
-    expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
-    print("Initial expectation value of number operator:", expectation_value_history[0])
-    time_points = [0]
-
-    # Time evolution loop
-    for step in range(1,nt+1):
-        rho_t = U @ rho_t
-        rho_matrix = rho_t.reshape(2 ,2)
-        rho_matrix = rho_matrix / np.trace(rho_matrix)
-        expectation_value_history.append(np.trace(numberop @ rho_matrix))
-        time_points.append(step * dt)
     return expectation_value_history, time_points
+
+
+
 
 
 
