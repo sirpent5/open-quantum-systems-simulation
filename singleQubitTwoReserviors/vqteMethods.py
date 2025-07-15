@@ -1,40 +1,35 @@
 from imports import *
 
-def hamiltonian_generation(eps, gamma, F_R,F_L):
-    """
-    Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
+def hamiltonian_generation(eps, gamma_L, gamma_R, F_R,F_L):
+#     """
+#     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
     
-    Inputs:
-        eps: (float) Coupling strength of the qubit to the reservoir.
-        gamma: (float) Coupling strength of the qubit to the environment.
-        mu: (float) Chemical potential of the reservoir.
-        T: (float) Temperature of the reservoir.
-    Returns:
-        hamiltonian_re: SparsePauliOp representing the real part of the Hamiltonian of the system.
-        hamiltonian_im: SparsePauliOp representing the imaginary part of the Hamiltonian of the system.
-    """
+#     Inputs:
+#         eps: (float) Coupling strength of the qubit to the reservoir.
+#         gamma: (float) Coupling strength of the qubit to the environment.
+#         mu: (float) Chemical potential of the reservoir.
+#         T: (float) Temperature of the reservoir.
+#     Returns:
+#         hamiltonian_re: SparsePauliOp representing the real part of the Hamiltonian of the system.
+#         hamiltonian_im: SparsePauliOp representing the imaginary part of the Hamiltonian of the system.
+#     """
 
-    # hamiltonian_re = SparsePauliOp(["IZ", "ZI", "XY", "YX", "XY", "YX"], coeffs=[-eps / 2, eps / 2, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_L)) / 4, -(gamma * (1 - 2*F_R)) / 4, -(gamma * (1 - 2*F_R)) / 4])
- 
-    # hamiltonian_im_L = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_L)) / 4, (gamma * (1 - 2*F_L)) / 4])
-    # hamiltonian_im_R = -1 * SparsePauliOp(["XX", "YY", "II", "IZ", "ZI"], coeffs=[gamma / 4, -gamma / 4, -gamma / 2, (gamma * (1 - 2*F_R)) / 4, (gamma * (1 - 2*F_R)) / 4])
-    # hamiltonian_im = hamiltonian_im_L + hamiltonian_im_R
-    
-
-    common_coeff_0 = (-gamma * (1- (2*F_R)))/4 -(gamma * (1- (2*F_L)))/4
-    common_coeff_1 = (-gamma * (1- (2*F_R)))/4 -(gamma * (1- (2*F_L)))/4
-
-
-    hamiltonian_re = SparsePauliOp(
-        ["IZ", "ZI", "XY", "YX"],
-        coeffs=[-eps / 2, eps / 2, common_coeff_0, common_coeff_0]
+  
+    hamiltonian_re = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
+        coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
     )
 
-    hamiltonian_im = SparsePauliOp(
-        ["XX", "YY", "II", "IZ", "ZI"],
-        coeffs=[-gamma / 2, gamma / 2, gamma, common_coeff_1, common_coeff_1]
-    )
+
+    hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
+        coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
+                 ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
+
+    
     return hamiltonian_re, hamiltonian_im
+
+
+
+
 
 
 def statevector_to_densitymatrix(v):

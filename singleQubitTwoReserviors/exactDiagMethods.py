@@ -67,15 +67,15 @@ def S_Term(N, cte_list, SigmaMatrix):
     return Matrix_Sigma #∑ I⊗...⊗I⊗ΔSigma⊗Sigma⊗I...⊗I
 
 
-def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
+def perform_exact_diag(gamma_L, gamma_R, F_L,F_R, dt, nt, initial_state, H, N):
 
     
     L_K = []
     
-    L_K.append(np.sqrt(gamma*(1-F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
-    L_K.append(np.sqrt(gamma*F_L)*Enlarge_Matrix_site_j(0, N, Sigma_plus)) 
-    L_K.append(np.sqrt(gamma *(1-F_R))*Enlarge_Matrix_site_j(N-1, N, Sigma_minus))
-    L_K.append(np.sqrt(gamma * F_R)*Enlarge_Matrix_site_j(N-1, N, Sigma_plus))
+    L_K.append(np.sqrt(gamma_L*(1-F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
+    L_K.append(np.sqrt(gamma_L*F_L)*Enlarge_Matrix_site_j(0, N, Sigma_plus)) 
+    L_K.append(np.sqrt(gamma_R *(1-F_R))*Enlarge_Matrix_site_j(N-1, N, Sigma_minus))
+    L_K.append(np.sqrt(gamma_R * F_R)*Enlarge_Matrix_site_j(N-1, N, Sigma_plus))
      
     Superoperator = Liouvillian(H, L_K)
 
@@ -89,9 +89,9 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
   
 
     # Create time evolution operator
-    d = len(H)
+   
     U = scipy.linalg.expm(Superoperator * dt)
-    rho_t = initial_state.reshape(d**2,1)  # Vectorized  state
+    rho_t = initial_state.reshape(4,1)  # Vectorized  state
 
     expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
     print("Initial expectation value of number operator:", expectation_value_history[0])
@@ -101,14 +101,37 @@ def perform_exact_diag(gamma, F_L,F_R, dt, nt, initial_state, H,N):
     for step in range(1,nt+1):
         
         rho_t = U @ rho_t
-        rho_matrix = rho_t.reshape(d ,d)
+        rho_matrix = rho_t.reshape(2 , 2)
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
         time_points.append(step * dt)
     return expectation_value_history, time_points, referenceN
 
+
+
+
+
+    expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
+    print("Initial expectation value of number operator:", expectation_value_history[0])
+    time_points = [0]
+
+    # Time evolution loop
+    for step in range(1,nt+1):
+        rho_t = U @ rho_t
+        rho_matrix = rho_t.reshape(2 ,2)
+        rho_matrix = rho_matrix / np.trace(rho_matrix)
+        expectation_value_history.append(np.trace(numberop @ rho_matrix))
+        time_points.append(step * dt)
+    return expectation_value_history, time_points
+
+
+
+
+
+
+
 def build_exact_diag_hamiltonian(eps):
-    H = eps*Sigma_minus@Sigma_plus
+    H = eps*(Sigma_minus@Sigma_plus)
     return H
 
 
