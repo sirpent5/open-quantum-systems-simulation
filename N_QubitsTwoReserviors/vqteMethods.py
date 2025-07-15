@@ -6,104 +6,133 @@ from imports import *
 import numpy as np
 from qiskit.quantum_info import SparsePauliOp
 
-def hamiltonian_generation(n, eps, gamma_L, gamma_R, F_L, F_R, t):
-    # Initialize empty lists for Pauli strings and coefficients
- 
-    n = 2*n
+def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
+    """
+    Returns H_re and H_im for a fermionic chain (1 qubit per site, no spin).
+    
+    Args:
+        n_sites: Number of physical sites (equals number of qubits)
+        eps: List of on-site energies [eps_1, ..., eps_n]
+        gamma_L, gamma_R: Left/right reservoir couplings
+        F_L, F_R: Reservoir occupation factors (0 ≤ F ≤ 1)
+        t: Hopping amplitude
+        
+    Returns:
+        H_re, H_im: Real and imaginary parts as SparsePauliOp
+    """
+    # Initialize Pauli lists and coefficients
+    pauli_re, coeffs_re = [], []
+    pauli_im, coeffs_im = [], []
+    
+   
+    # ===== Real Part (H_re) =====
+    #I like this 
 
-    pauli_list_re = []
-    coeffs_re = []
-    pauli_list_im = []
-    coeffs_im = []
+    if n_sites > 1:
+        for i in range(n_sites):
+            z_str = ['I']*n_sites
+            z_str[i] = 'Z'
+            pauli_re.append(''.join(z_str))
+            coeffs_re.append(-eps/2)
+
+            pauli_re.append(''.join(z_str))
+            coeffs_re.append(eps/2)
+        #I like this too
+        # 2. Hopping terms (t)
+        for i in range(n_sites-1):
+            # XX term
+            xx = ['I']*n_sites
+            xx[i], xx[i+1] = 'X', 'X'
+            pauli_re.append(''.join(xx))
+            coeffs_re.append(t)
+            
+            # YY term
+            yy = ['I']*n_sites
+            yy[i], yy[i+1] = 'Y', 'Y'
+            pauli_re.append(''.join(yy))
+            coeffs_re.append(t)
+        
+        # 3. Reservoir-induced XY/YX terms (only for edge pairs)
+        # Left edge (sites 0-1)
+        xy = ['I']*n_sites
+        xy[0], xy[1] = 'X', 'Y'
+        pauli_re.append(''.join(xy))
+        coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
+        
+        yx = ['I']*n_sites
+        yx[0], yx[1] = 'Y', 'X'
+        pauli_re.append(''.join(yx))
+        coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
+        
+        # Right edge (sites n-2, n-1)
+        if n_sites > 2:
+            xy = ['I']*n_sites
+            xy[-2], xy[-1] = 'X', 'Y'
+            pauli_re.append(''.join(xy))
+            coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
+            
+            yx = ['I']*n_sites
+            yx[-2], yx[-1] = 'Y', 'X'
+            pauli_re.append(''.join(yx))
+            coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
+        
+        # ===== Imaginary Part (H_im) =====
+        # 1. Dissipative XX/YY terms (edges only)
+        # Left edge
+        xx = ['I']*n_sites
+        xx[0], xx[1] = 'X', 'X'
+        pauli_im.append(''.join(xx))
+        coeffs_im.append(-gamma_L/4)
+        
+        yy = ['I']*n_sites
+        yy[0], yy[1] = 'Y', 'Y'
+        pauli_im.append(''.join(yy))
+        coeffs_im.append(gamma_L/4)
+        
+        # Right edge
+   
+        xx = ['I']*n_sites
+        xx[-2], xx[-1] = 'X', 'X'
+        pauli_im.append(''.join(xx))
+        coeffs_im.append(-gamma_R/4)
+            
+        yy = ['I']*n_sites
+        yy[-2], yy[-1] = 'Y', 'Y'
+        pauli_im.append(''.join(yy))
+        coeffs_im.append(gamma_R/4)
+        
+        # 2. Global identity term
+        pauli_im.append('I'*n_sites)
+        coeffs_im.append((gamma_L + gamma_R)/2)
+        
+        # 3. Boundary Z terms
+        # Left reservoir
+        z_left = ['I']*n_sites
+        z_left[0] = 'Z'
+        pauli_im.append(''.join(z_left))
+        coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
+        
+        # Right reservoir
+        z_right = ['I']*n_sites
+        z_right[-1] = 'Z'
+        pauli_im.append(''.join(z_right))
+        coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+
+        return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), \
+           SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
+        
+    else:
+        hamiltonian_re = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
+        coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
+    )
 
 
-    for i in range(n):
-        z_term = ['I'] * n
-        z_term[i] = 'Z'
-        pauli_str = ''.join(z_term)
-        pauli_list_re.extend([pauli_str, pauli_str])
-        coeffs_re.extend([-eps/2, eps/2])
-
-
-
-
-    for i in range(n-1):
-        # Left reservoir affects only qubit 1 
-        gamma_ij_L = gamma_L if i == 0 else 0
-        F_ij_L = F_L if i == 0 else 0
-        # Right reservoir affects only qubit n 
-        gamma_ij_R = gamma_R if i == n-1 else 0
-        F_ij_R = F_R if i == n-1 else 0
-
-        xy_term = ['I'] * n
-        xy_term[i] = 'X'
-        xy_term[i+1] = 'Y'
-        pauli_str_xy = ''.join(xy_term)
-
-        yx_term = ['I'] * n
-        yx_term[i] = 'Y'
-        yx_term[i+1] = 'X'
-        pauli_str_yx = ''.join(yx_term)
-
-        coeff = -0.25 * (gamma_ij_L * (1 - 2*F_ij_L) + gamma_ij_R * (1 - 2*F_ij_R))
-        pauli_list_re.extend([pauli_str_xy, pauli_str_yx])
-        coeffs_re.extend([coeff, coeff])
-
-    ### NEW: Add nearest-neighbor hopping (tunneling) terms (X_i X_j + Y_i Y_j)
-    for i in range(n-1):
-        xx_term = ['I'] * n
-        xx_term[i] = 'X'
-        xx_term[i+1] = 'X'
-        pauli_str_xx = ''.join(xx_term)
-
-        yy_term = ['I'] * n
-        yy_term[i] = 'Y'
-        yy_term[i+1] = 'Y'
-        pauli_str_yy = ''.join(yy_term)
-
-        pauli_list_re.extend([pauli_str_xx, pauli_str_yy])
-        coeffs_re.extend([t, t])  # Jumping coefficient t
-
-    # Nearest-neighbor XX/YY interactions (imaginary part)
-    for i in range(n-1):
-        gamma_ij = gamma_L if i == 0 else (gamma_R if i == n-2 else 0)
-
-        xx_term = ['I'] * n
-        xx_term[i] = 'X'
-        xx_term[i+1] = 'X'
-        pauli_str_xx = ''.join(xx_term)
-
-        yy_term = ['I'] * n
-        yy_term[i] = 'Y'
-        yy_term[i+1] = 'Y'
-        pauli_str_yy = ''.join(yy_term)
-
-        pauli_list_im.extend([pauli_str_xx, pauli_str_yy])
-        coeffs_im.extend([-gamma_ij/4, gamma_ij/4])
-
-    # Global identity term (imaginary part)
-    pauli_list_im.append('I' * n)
-    coeffs_im.append((gamma_L + gamma_R)/2)
-
-    # Boundary Z terms (left/right reservoirs)
-    z_left = ['I'] * n
-    z_left[0] = 'Z'
-    pauli_str_zL = ''.join(z_left)
-    coeff_zL = -0.25 * (gamma_L * (1 - 2*F_L))
-
-    z_right = ['I'] * n
-    z_right[-1] = 'Z'
-    pauli_str_zR = ''.join(z_right)
-    coeff_zR = -0.25 * (gamma_R * (1 - 2*F_R))
-
-    pauli_list_im.extend([pauli_str_zL, pauli_str_zR])
-    coeffs_im.extend([coeff_zL, coeff_zR])
-
-    # Construct SparsePauliOp
-    hamiltonian_re = SparsePauliOp(pauli_list_re, coeffs_re)
-    hamiltonian_im = SparsePauliOp(pauli_list_im, coeffs_im)
-
-    return hamiltonian_re, hamiltonian_im
+        hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
+        coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
+                 ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
+        return hamiltonian_re, hamiltonian_im
+    
+    
 
 # def hamiltonian_generation(N, eps, gamma_L, gamma_R, F_L, F_R, J):
 #     """
