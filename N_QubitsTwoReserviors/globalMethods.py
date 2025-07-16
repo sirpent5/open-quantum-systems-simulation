@@ -48,6 +48,23 @@ def build_initial_states(ham_real, N):
     return init_state, initial_state, ansatz, init_param_values
 
 
+
+def build_exact_initial(N):
+
+    dim = 2**N
+    
+    # The state vector for |00...0> is [1, 0, 0, ...]
+    psi = np.zeros(dim, dtype=complex)
+    psi[0] = 1.0
+
+    psi[(int(N/2))] = 1.0
+    
+    # The density matrix for a pure state |psi> is the outer product |psi><psi|
+    rho = np.outer(psi, np.conj(psi))
+    
+    return rho
+
+
 def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     """
     Plots a comparison of VQTE and exact diagonalization results.
@@ -59,23 +76,23 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
 
     # Plot Exact Diagonalization Results
     # Ensure the time axis slice matches the length of the results data
-    # for site_idx in range(len(exact_diag_results)):
-    #     num_points = len(exact_diag_results[site_idx])
-    #     plt.plot(time_axis[:num_points], 
-    #              exact_diag_results[site_idx], 
-    #              label=f'Exact Diag Site {site_idx} Occupation', 
-    #              marker='', 
-    #              linestyle='dashed')
+    for site_idx in range(len(exact_diag_results)):
+        num_points = len(exact_diag_results[site_idx])
+        plt.plot(time_axis[:num_points], 
+                 exact_diag_results[site_idx], 
+                 label=f'Exact Diag Site {site_idx} Occupation', 
+                 marker='', 
+                 linestyle='dashed')
 
     # Plot VQTE Results
     # Ensure the time axis slice matches the length of the results data
-    for site_idx in range(len(vqte_results)):
-        num_points = len(vqte_results[site_idx])
-        plt.plot(time_axis[:num_points], 
-                 vqte_results[site_idx], 
-                 label=f'VQTE Site {site_idx} Occupation', 
-                 marker='', 
-                 linestyle='solid')
+    # for site_idx in range(len(vqte_results)):
+    #     num_points = len(vqte_results[site_idx])
+    #     plt.plot(time_axis[:num_points], 
+    #              vqte_results[site_idx], 
+    #              label=f'VQTE Site {site_idx} Occupation', 
+    #              marker='', 
+    #              linestyle='solid')
 
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")

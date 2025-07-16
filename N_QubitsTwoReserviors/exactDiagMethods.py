@@ -116,15 +116,14 @@ def build_number_op_list(N):
            
 #         time_points.append(step * dt)
 #     return expectation_value_history, time_points
-
-def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
+def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
 
         # Build Lindblad operators
         L_K = [
-            np.sqrt(gamma*(1-F_L)) * Enlarge_Matrix_site_j(0, N, Sigma_minus),
-            np.sqrt(gamma*F_L) * Enlarge_Matrix_site_j(0, N, Sigma_plus),
-            np.sqrt(gamma*(1-F_R)) * Enlarge_Matrix_site_j(N-1, N, Sigma_minus),
-            np.sqrt(gamma*F_R) * Enlarge_Matrix_site_j(N-1, N, Sigma_plus)
+            np.sqrt(gamma_L*(1-F_L)) * Enlarge_Matrix_site_j(0, N, Sigma_minus),
+            np.sqrt(gamma_L*F_L) * Enlarge_Matrix_site_j(0, N, Sigma_plus),
+            np.sqrt(gamma_R*(1-F_R)) * Enlarge_Matrix_site_j(N-1, N, Sigma_minus),
+            np.sqrt(gamma_R*F_R) * Enlarge_Matrix_site_j(N-1, N, Sigma_plus)
         ]
 
         # Construct superoperator
@@ -162,85 +161,25 @@ def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state, H, N, eps):
         return expectation_value_history, np.array(time_points)
 
 
-
-
-# def build_exact_diag_hamiltonian(N, j, eps):
-
-#     H = np.zeros((2**N, 2**N), dtype=complex)
-
-#     # for i in range(N - 1):
-#     #     # Use the correlation matrix helper for a cleaner implementation
-#     #     term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
-#     #     term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
-#     #     H += j * (term1 + term2)
-        
-
-#     for i in range(N - 1):
-#         term1 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_plus, Sigma_minus)
-#         term2 = Correlation_Matrix_i_Matrix_j(i, i + 1, N, Sigma_minus, Sigma_plus)
-#         H += j * (term1 + term2)
-    
-#     # On-site energies (alternating signs)
-#     for i in range(N):
-#         sign = (-1)**i
-#         Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
-#               Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
-#         H += sign * (eps / 2) * Z_i
-     
-    
-#     return H
-
-def build_exact_diag_hamiltonian(N, J, epsilon):
+def build_exact_diag_hamiltonian(J, epsilon):
+    N = len(epsilon)
 
     dim = 2**N
     H = np.zeros((dim, dim), dtype=complex)
     
     # On-site energy terms (ε a_j^† a_j)
     for j in range(N):
-        # a_j^† a_j = (σ_j^+ σ_j^-) = (1 - σ_j^z)/2
+        # a_j^† a_j = (σ_j^- σ_j^+) = (1 - σ_j^z)/2
         Z_j = Enlarge_Matrix_site_j(j, N, Sigma_z)
-        H += epsilon * 0.5 * (np.eye(dim) - Z_j)
+        H += epsilon[j] * 0.5 * (np.eye(dim) - Z_j)
     
-    # Hopping terms (J a_j^† a_{j+1} + h.c.)
+    # Hopping terms 
     for j in range(N-1):
-        
-        JW_string = np.eye(dim)
-        for k in range(j):
-            JW_string = JW_string @ Enlarge_Matrix_site_j(k, N, Sigma_z)
-        
-        
-        term = (JW_string @ 
-                Enlarge_Matrix_site_j(j, N, Sigma_plus) @ 
-                Enlarge_Matrix_site_j(j+1, N, Sigma_minus))
-        
-        
-        H += J * (term + term.conj().T)
-    
- 
-    H = 0.5 * (H + H.conj().T)
+        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_x, Sigma_x)
+        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_y, Sigma_y) 
     return H
 
-# def build_exact_diag_hamiltonian(N, j, eps):
 
-#     dim = 2**N
-#     H = np.zeros((dim, dim), dtype=complex)
-    
-#     # Nearest-neighbor coupling terms
-#     for i in range(N - 1):
-#         term1 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_plus, Sigma_minus)
-#         term2 = Correlation_Matrix_i_Matrix_j(i, i+1, N, Sigma_minus, Sigma_plus)
-#         H += j * (term1 + term2)
-    
-#     # On-site energy terms (alternating signs)
-#     for i in range(N):
-#         sign = (-1)**i
-#         Z_i = Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_plus, Sigma_minus) - \
-#               Correlation_Matrix_i_Matrix_j(i, i, N, Sigma_minus, Sigma_plus)
-#         H += sign * (eps / 2) * Z_i
-    
-#     H = 0.5 * (H + H.conj().T)
-    
-#     return H
 def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points):
 
     plt.figure(figsize=(10, 6))

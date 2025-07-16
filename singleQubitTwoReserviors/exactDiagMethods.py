@@ -108,9 +108,6 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
     rho_ss = NULL.reshape(2, 2)
     rho_ss = rho_ss / np.trace(rho_ss)
 
-    referenceN = np.trace(numberop @ rho_ss)
-    print(f"Reference number operator expectation value (steady state): {referenceN}")
-
     verify_density_matrix(initial_state)
 
     # Create time evolution operator
