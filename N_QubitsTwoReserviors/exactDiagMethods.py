@@ -148,16 +148,14 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         
         # Time evolution loop
         for step in range(1, nt+1):
-        
+                time_points.append(step * dt)
                 rho_t = U @ rho_t
                 rho_matrix = rho_t.reshape(d, d, order='F')
                 # Store results
                 for site in range(N):
                     expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
+
                 
-                time_points.append(step * dt)
-   
-        
         return expectation_value_history, np.array(time_points)
 
 
@@ -178,21 +176,5 @@ def build_exact_diag_hamiltonian(J, epsilon):
         H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_x, Sigma_x)
         H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_y, Sigma_y) 
     return H
-
-
-def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points):
-
-    plt.figure(figsize=(10, 6))
-
-    for site_idx in range(len(exact_diag_results)): # Iterate through each site's data
-        plt.plot(time_points, exact_diag_results[site_idx], label=f'Site {site_idx} Occupation', marker='', linestyle='solid')
-
-    plt.title("Exact Diagonalization Results of two reserviors coupled to N qubits")
-    plt.xlabel("Time (t)")
-    plt.ylabel("⟨n⟩ (Expectation Value)")
-    plt.grid(True)
-    plt.legend()
-    
-    plt.show()
 
 

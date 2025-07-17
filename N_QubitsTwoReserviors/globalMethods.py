@@ -19,47 +19,23 @@ def verify_density_matrix(rho):
 
 def build_initial_states(ham_real):
 
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 1)
-
-    N = int(ham_real.num_qubits/2)
+    ansatz = EfficientSU2(ham_real.num_qubits, reps = 3)
 
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
-        #init_param_values[ansatz.parameters[i]] = np.random.uniform(0, 2 * np.pi)
+        init_param_values[ansatz.parameters[i]] = np.random.uniform(0, 2 * np.pi)
+        #init_param_values[ansatz.parameters[i]] = 2*np.pi
 
-
-        init_param_values[ansatz.parameters[i]] = 2*np.pi
-     # initialize the parameters which also decide the initial state
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
     psi_vector = init_state.data
 
 
     initial_state = np.outer(psi_vector, psi_vector.conj())
-    # state = np.zeros(2**N, dtype=complex)
-    # state[1] = 1.0  # Binary '00...01' (first qubit = |1⟩)
-
-    # initial_state = np.outer(state, state.conj())  #
-
-    #For exact diag
+   
     return init_state, initial_state, ansatz, init_param_values
 
 
-
-def build_exact_initial(N):
-
-    dim = 2**N
-    
-    # The state vector for |00...0> is [1, 0, 0, ...]
-    psi = np.zeros(dim, dtype=complex)
-    psi[0] = 1.0
-
-    psi[(int(N/2))] = 1.0
-    
-    # The density matrix for a pure state |psi> is the outer product |psi><psi|
-    rho = np.outer(psi, np.conj(psi))
-    
-    return rho
 
 
 def output_results(vqte_results, exact_diag_results, time, nt, time_points):
@@ -83,13 +59,13 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
 
     # Plot VQTE Results
     # Ensure the time axis slice matches the length of the results data
-    # for site_idx in range(len(vqte_results)):
-    #     num_points = len(vqte_results[site_idx])
-    #     plt.plot(time_axis[:num_points], 
-    #              vqte_results[site_idx], 
-    #              label=f'VQTE Site {site_idx} Occupation', 
-    #              marker='', 
-    #              linestyle='solid')
+    for site_idx in range(len(vqte_results)):
+        num_points = len(vqte_results[site_idx])
+        plt.plot(time_axis[:num_points], 
+                 vqte_results[site_idx], 
+                 label=f'VQTE Site {site_idx} Occupation', 
+                 marker='', 
+                 linestyle='solid')
 
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
