@@ -17,9 +17,9 @@ def verify_density_matrix(rho):
     purity = np.trace(rho @ rho)
     print(f"Purity (Tr(ρ²)): {purity} (should be 1 for pure state)")
 
-def build_initial_states(ham_real, N):
+def build_initial_states(ham_real, layers):
 
-    ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+    ansatz = EfficientSU2(ham_real.num_qubits, layers)
 
 
     init_param_values = {}
