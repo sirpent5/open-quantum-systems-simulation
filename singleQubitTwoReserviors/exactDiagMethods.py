@@ -138,27 +138,24 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
 
 
 
-def build_exact_diag_hamiltonian(eps):
-    H = eps*(Sigma_minus@Sigma_plus)
-    return H
+def build_exact_diag_hamiltonian(J, epsilon):
+    N = len(epsilon)
 
-
-def output_exact_diag_results(exact_diag_results, time, nt, eps, mu_L,mu_R,T_L, T_R, time_points, steadyState):
-
-    plt.figure(figsize=(10, 6))
-    time_axis = np.linspace(0, time, nt+1)
-
-    time_axis = np.linspace(0, time, nt+1)
-    plt.plot(time_axis, [steadyState] * (nt + 1),
-             label=f'Steady State ($\\langle n \\rangle$ = {steadyState:.4f})',
-             linestyle='--', color='red')
-
-    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
-
-    plt.title("Exact Diagonalization Results of two reserviors coupled to a single qubit")
-    plt.xlabel("Time (t)")
-    plt.ylabel("⟨n⟩ (Expectation Value)")
-    plt.grid(True)
-    plt.legend()
+    dim = 2**N
+    H = np.zeros((dim, dim), dtype=complex)
     
-    plt.show()
+    # On-site energy terms (ε a_j^† a_j)
+    for j in range(N):
+        # a_j^† a_j = (σ_j^- σ_j^+) = (1 - σ_j^z)/2
+        Z_j = Enlarge_Matrix_site_j(j, N, Sigma_z)
+        H += epsilon[j] * 0.5 * (np.eye(dim) - Z_j)
+    
+    # Hopping terms 
+    for j in range(N-1):
+        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_x, Sigma_x)
+        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_y, Sigma_y) 
+    return H
+ 
+
+
+

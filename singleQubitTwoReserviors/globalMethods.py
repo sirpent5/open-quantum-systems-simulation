@@ -19,7 +19,7 @@ def verify_density_matrix(rho):
 
 
 def build_initial_states(ham_real):
-        ansatz = EfficientSU2(ham_real.num_qubits, reps=1)
+        ansatz = EfficientSU2(ham_real.num_qubits, reps=3)
         init_param_values = {}
         for i in range(len(ansatz.parameters)):
             init_param_values[ansatz.parameters[i]] = (
@@ -45,7 +45,7 @@ def output_results(vqte_results, exact_diag_results, time, nt,time_points):
     plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
 
 
-    plt.title("Comparison of VQTE and Exact Time Evolution")
+    plt.title("Comparison of VQTE and Exact Time Evolution for a Qubit coupled to two thermal reserviors")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
     plt.grid(True)
