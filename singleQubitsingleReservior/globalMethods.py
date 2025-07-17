@@ -40,13 +40,15 @@ def output_results(vqte_results, exact_diag_results, time, nt, eps, mu, T, time_
     time_axis = np.linspace(0, time, nt+1)
 
     plt.plot(time_axis, [1 / (1 + np.exp((eps - mu) / T))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
-    plt.plot(time_points, exact_diag_results, label='Expectation Value (Simulated)', marker='', linestyle='solid')
+    plt.plot(time_points, exact_diag_results, label='Exact Classical Solution', marker='', linestyle='solid')
+    plt.plot
     # Plot Exact results
     #plt.plot(np.linspace(0, time, nt), exact_diag_results, marker='', linestyle='--', color='red', label='Exact Result')
-    plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
-    plt.title("Comparison of VQTE and Exact Time Evolution")
+    
+    plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Simulation Result', color='blue')
+    plt.title("Comparison of VQTE and Exact Time Evolution for a Single Qubit coupled to a Reservoir")
     plt.xlabel("Time (t)")
-    plt.ylabel("⟨n⟩ (Expectation Value)")
+    plt.ylabel("Expectation Value")
     plt.grid(True)
     plt.legend()
     
