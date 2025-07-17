@@ -139,7 +139,7 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
 
 
 def build_exact_diag_hamiltonian(J, epsilon):
-    N = len(epsilon)
+    N = 1
 
     dim = 2**N
     H = np.zeros((dim, dim), dtype=complex)
@@ -148,7 +148,7 @@ def build_exact_diag_hamiltonian(J, epsilon):
     for j in range(N):
         # a_j^† a_j = (σ_j^- σ_j^+) = (1 - σ_j^z)/2
         Z_j = Enlarge_Matrix_site_j(j, N, Sigma_z)
-        H += epsilon[j] * 0.5 * (np.eye(dim) - Z_j)
+        H += epsilon * 0.5 * (np.eye(dim) - Z_j)
     
     # Hopping terms 
     for j in range(N-1):
