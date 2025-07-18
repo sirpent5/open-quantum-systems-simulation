@@ -225,11 +225,24 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
     # Perform time evolution
     results_history = [[] for _ in range(N)]
 
-    print("Initial expectation values:")
-    for i, op in enumerate(number_operators):
-        initial_exp_val = init_state.expectation_value(op).real
-        results_history[i].append(initial_exp_val)
-        print(f"  Qubit {i}: {initial_exp_val:.4f}")
+    with open(output_file, 'w') as f:
+        # Write header
+        f.write("Time Step")
+        for i in range(N):
+            f.write(f", Qubit {i}")
+        f.write("\n")
+
+        # Initial expectation values
+        print("Initial expectation values:")
+        f.write("0")  # Time step 0 (initial state)
+        for i, op in enumerate(number_operators):
+            initial_exp_val = init_state.expectation_value(op).real
+            results_history[i].append(initial_exp_val)
+            f.write(f", {initial_exp_val:.8f}")
+            print(f"  Qubit {i}: {initial_exp_val:.4f}")
+        f.write("\n")
+
+
 
 
     # --- Time Evolution Loop ---
@@ -250,14 +263,12 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
         current_psi = Statevector(ansatz.assign_parameters(init_param_values))
         norm = np.linalg.norm(current_psi.data)
         normalized_psi = current_psi / norm if norm != 0 else current_psi
-
+        f.write(f"{t+1}") 
         # Calculate expectation value for each qubit's number operator
         for i, op in enumerate(number_operators):
             exp_val = normalized_psi.expectation_value(op).real
             results_history[i].append(exp_val)
+            f.write(f", {exp_val:.8f}")
+            f.write("\n")
 
     return results_history
-
-
-
-    
