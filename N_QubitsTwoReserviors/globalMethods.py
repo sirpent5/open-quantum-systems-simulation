@@ -19,7 +19,7 @@ def verify_density_matrix(rho):
 
 def build_initial_states(ham_real):
 
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 3)
+    ansatz = EfficientSU2(ham_real.num_qubits, reps = 8)
 
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
