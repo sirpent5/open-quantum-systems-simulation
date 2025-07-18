@@ -1,5 +1,16 @@
 from imports import *
+
+
 def verify_density_matrix(rho):
+
+    """
+    Verifies that a Density Matrix is Hermatian
+
+    Inputs:
+        rho: (density matrix) The density matrix to be checked.
+    
+    """
+        
     # Check Hermitian
     hermitian = np.allclose(rho, rho.conj().T)
     print(f"Is Hermitian: {hermitian}")
@@ -8,7 +19,7 @@ def verify_density_matrix(rho):
     trace = np.trace(rho)
     print(f"Trace: {trace} (should be 1)")
     
-    # Check positive semidefinite?
+    # Check positive semidefinite
     eigenvalues = np.linalg.eigvalsh(rho)
     print(f"Eigenvalues: {eigenvalues}")
     print(f"All eigenvalues ≥ 0: {np.all(eigenvalues >= 0)}")
@@ -16,6 +27,8 @@ def verify_density_matrix(rho):
     # Check purity 
     purity = np.trace(rho @ rho)
     print(f"Purity (Tr(ρ²)): {purity} (should be 1 for pure state)")
+
+
 
 
 def build_initial_states(ham_real):
@@ -64,13 +77,16 @@ def build_initial_states(ham_real):
     return vqte_init_state, exact_diag_initial_state, ansatz, init_param_values
 
 def output_results(vqte_results, exact_diag_results, time, nt,time_points):
+
+    # Build graph
     plt.figure(figsize=(10, 6))
     time_axis = np.linspace(0, time, nt+1)
  
+    # Plot results
     plt.plot(time_points, exact_diag_results, label='Exact Diag Result', marker='', linestyle='solid')
     plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
 
-
+    # Titles and finalize plot
     plt.title("Comparison of VQTE and Exact Time Evolution for a Qubit coupled to two thermal reserviors")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")

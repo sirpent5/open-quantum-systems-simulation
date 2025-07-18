@@ -102,12 +102,6 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
     # Construct the Liouvillian superoperator
     Superoperator = Liouvillian(H, L_K)
     
-    # Calculate the steady state (null space of the Liouvillian)
-    null = null_space(Superoperator)
-    NULL = null[:, 0]
-    rho_ss = NULL.reshape(2, 2)
-    rho_ss = rho_ss / np.trace(rho_ss)
-
     verify_density_matrix(initial_state)
 
     # Create time evolution operator
@@ -133,29 +127,24 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
     return expectation_value_history, time_points
 
 
+def build_exact_diag_hamiltonian(eps):
 
-
-
-
-
-def build_exact_diag_hamiltonian(J, epsilon):
-    N = 1
-
-    dim = 2**N
-    H = np.zeros((dim, dim), dtype=complex)
+    """
+    Constructs the Hamiltonian for exact diagonalization of a two-level system (qubit).
     
-    # On-site energy terms (ε a_j^† a_j)
-    for j in range(N):
-        # a_j^† a_j = (σ_j^- σ_j^+) = (1 - σ_j^z)/2
-        Z_j = Enlarge_Matrix_site_j(j, N, Sigma_z)
-        H += epsilon * 0.5 * (np.eye(dim) - Z_j)
-    
-    # Hopping terms 
-    for j in range(N-1):
-        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_x, Sigma_x)
-        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_y, Sigma_y) 
+    The Hamiltonian represents the energy of the excited state, with:
+    H = ε|1⟩⟨1| = εσ₊σ₋
+    where |1⟩ is the excited state and ε is its energy.
+
+    Parameters:
+        eps (float): The energy splitting/level spacing between ground |0⟩ and excited |1⟩ states
+        
+    Returns:
+        numpy.ndarray: The 2×2 Hamiltonian matrix for the qubit system
+    """
+
+    H = eps*Sigma_minus@Sigma_plus
     return H
- 
 
 
 

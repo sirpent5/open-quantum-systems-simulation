@@ -100,21 +100,3 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
 
 
     return num_op_list
-
-def output_vqte_results(vqte_results, time, nt, eps, mu_L,mu_R,T_L, T_R):
-
-    plt.figure(figsize=(10, 6))
-    time_axis = np.linspace(0, time, nt+1)
-    mu_effective = (mu_L + mu_R) / 2
-    T_effective = (T_L + T_R) / 2
-    time_axis = np.linspace(0, time, nt+1)
-    plt.plot(time_axis, [1 / (1 + np.exp((eps - mu_effective) / T_effective))] * (nt+1), label='Steady State Expectation Value', linestyle='solid')
-    plt.plot(time_axis/2, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
-
-    plt.title("VQTE Results of two reserviors coupled to a single qubit")
-    plt.xlabel("Time (t)")
-    plt.ylabel("⟨n⟩ (Expectation Value)")
-    plt.grid(True)
-    plt.legend()
-    
-    plt.show()
