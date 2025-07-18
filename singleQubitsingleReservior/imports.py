@@ -2,8 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy  
-from scipy.linalg import null_space
+import scipy
 from qiskit.circuit.library import EfficientSU2
 from qiskit.quantum_info import Statevector
 from qiskit_algorithms.time_evolvers.variational import RealMcLachlanPrinciple, ImaginaryMcLachlanPrinciple

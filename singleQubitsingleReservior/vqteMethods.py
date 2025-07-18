@@ -1,5 +1,5 @@
+# Imports
 from imports import *
-
 
 def hamiltonian_generation(eps, gamma, mu, T):
     """
@@ -41,13 +41,8 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
 
-# Initialize lists to store results
-#second is the is expectation value of the number operator
-
+    # Initialize lists to store results
     num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
-    print("Initial expectation value of number operator using VQE:", num_op_list[0])
-
-
 
     # Perform time evolution
     for t in range(nt):
