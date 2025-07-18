@@ -61,7 +61,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
     
-    print(num_op_list)
+
     # --- Perform time evolution ---
     for t in range(nt):
         print("Step", t , "out of", nt)

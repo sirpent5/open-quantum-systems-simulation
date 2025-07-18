@@ -59,13 +59,13 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
 
     for i in range(n_sites-1):
         # XX term
-        xx = ['I']*n_sites
+        xx = ['I']*N
         xx[i], xx[i+1] = 'X', 'X'
         pauli_re.append(''.join(xx))
         coeffs_re.append(t)
         
         # YY term
-        yy = ['I']*n_sites
+        yy = ['I']*N
         yy[i], yy[i+1] = 'Y', 'Y'
         pauli_re.append(''.join(yy))
         coeffs_re.append(t)
@@ -95,7 +95,7 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
         pauli_re.append(''.join(yx))
         coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
     
-        print(SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)))
+        # print(SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)))
 
     # ===== Imaginary Part (H_im) =====
     # 1. Dissipative XX/YY terms (edges only)

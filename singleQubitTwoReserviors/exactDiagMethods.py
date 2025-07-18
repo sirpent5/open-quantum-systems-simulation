@@ -147,4 +147,3 @@ def build_exact_diag_hamiltonian(eps):
     return H
 
 
-
