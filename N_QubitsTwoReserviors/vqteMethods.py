@@ -46,10 +46,12 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
 
     for i in range(n_sites):
         z_str = ['I']* N
-        z_str[i] = 'Z'
+        z_str[i+1] = 'Z'
         pauli_re.append(''.join(z_str))
         coeffs_re.append(-eps[i]/2)
 
+        z_str = ['I']* N
+        z_str[i] = 'Z'
         pauli_re.append(''.join(z_str))
         coeffs_re.append(eps[i]/2)
     #I like this too
@@ -237,21 +239,23 @@ def statevector_to_densitymatrix(state_vector):
     return np.outer(state_vector, np.conj(state_vector))
 
 def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values,N):
+    print("This should say 1: " , N)
+
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
     number_operators = [create_number_operator(N, i) for i in range(N)]
     # Perform time evolution
     results_history = [[] for _ in range(N)]
-
+    print(results_history)
         # Initial expectation values
     print("Initial expectation values:")
    
     for i, op in enumerate(number_operators):
             initial_exp_val = init_state.expectation_value(op).real
             results_history[i].append(initial_exp_val)
-
-
+        
+    print(results_history[0])
     # --- Time Evolution Loop ---
     for t in range(nt):
         print(f"Step {t+1} out of {nt}")
