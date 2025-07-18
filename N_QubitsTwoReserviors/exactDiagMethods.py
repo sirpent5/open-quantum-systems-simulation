@@ -128,7 +128,7 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
 
         # Construct superoperator
         Superoperator = Liouvillian(H, L_K)
-        d = len(H)
+        d = 2*len(H)
 
       
 
@@ -138,7 +138,7 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         
         # Initialize state (column-major vectorization)
         rho_t = initial_state.reshape(d**2, 1, order='F')
-        number_ops = build_number_op_list(N)
+        number_ops = build_number_op_list(2*N)
         expectation_value_history = [[] for _ in range(N)]
         time_points = [0]
 
@@ -146,7 +146,7 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         rho_matrix = initial_state.copy()
        
         for site in range(N):
-            exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
+            exp_val = np.real(np.trace(number_ops[2*site] @ rho_matrix))
             expectation_value_history[site].append(exp_val)
            
 
