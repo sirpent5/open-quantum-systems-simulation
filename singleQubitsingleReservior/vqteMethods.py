@@ -1,7 +1,6 @@
-
-# from qiskit.quantum_info import SparsePauliOp
-# import numpy as np
 from imports import *
+
+
 def hamiltonian_generation(eps, gamma, mu, T):
     """
     Generates the Hamiltonian for the system of a single qubit coupled to a reservoir.
@@ -44,7 +43,7 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
 
 # Initialize lists to store results
 #second is the is expectation value of the number operator
-    trace_list = [1.0]
+
     num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
     print("Initial expectation value of number operator using VQE:", num_op_list[0])
 
@@ -67,7 +66,6 @@ def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_par
         
         # Calculate the trace and expectation value of the number operator
         trace = np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data))
-        trace_list.append(1.0) # Normalized so the trace is always 1
         num_op_list.append(np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data) @ np.array([[0, 0], [0, 1]])) / trace)
         #Stop
-    return num_op_list, trace_list
+    return num_op_list
