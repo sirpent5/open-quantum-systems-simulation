@@ -54,13 +54,13 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-
+    # Construct number operator
     num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
     
+    # Get initial expectation value
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
     
-    print(f"Initial expectation value of number operator: {initial_exp_val:.4f}")
 
     # --- Perform time evolution ---
     for t in range(nt):
@@ -91,8 +91,8 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         rho_unnormalized_vec = np.sqrt(norm_squared) * final_psi_normalized.data
         rho_matrix = statevector_to_densitymatrix(rho_unnormalized_vec)
 
+        # Extract expectation values
         true_trace = np.trace(rho_matrix)
-
         exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]])) / true_trace
         
         num_op_list.append(exp_val.real)
