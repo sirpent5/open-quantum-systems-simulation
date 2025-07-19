@@ -39,7 +39,7 @@ def statevector_to_densitymatrix(v):
 def perform_vqte(ham_real, ham_imag, init_state, mu, T, dt, nt, ansatz, init_param_values):
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
-
+    print("Density Matrix :" , statevector_to_densitymatrix(init_state.data))
 
     # Initialize lists to store results
     num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data) @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]

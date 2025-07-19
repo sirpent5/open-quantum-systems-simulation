@@ -6,150 +6,373 @@ from imports import *
 import numpy as np
 from qiskit.quantum_info import SparsePauliOp
 
-def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
+from qiskit.quantum_info import SparsePauliOp
+import numpy as np
+
+def jordan_wigner_hamiltonian(N, eps, gamma_L, gamma_R, F_L, F_R, t):
     """
-    Returns H_re and H_im for a fermionic chain (1 qubit per site, no spin).
+    N-site fermionic chain with reservoirs (2N qubits, Jordan-Wigner).
     
     Args:
-        n_sites: Number of physical sites (equals number of qubits)
-        eps: List of on-site energies [eps_1, ..., eps_n]
-        gamma_L, gamma_R: Left/right reservoir couplings
-        F_L, F_R: Reservoir occupation factors (0 ≤ F ≤ 1)
+        N: Number of physical sites
+        eps: On-site energy (list of length N)
+        gamma_L/R: Reservoir couplings
+        F_L/R: Reservoir occupations (0 ≤ F ≤ 1)
         t: Hopping amplitude
-        
-    Returns:
-        H_re, H_im: Real and imaginary parts as SparsePauliOp
     """
-    # Initialize Pauli lists and coefficients
+    num_qubits = 2 * N
+    pauli_re, coeffs_re = [], []  # Real part (coherent dynamics)
+    pauli_im, coeffs_im = [], []  # Imaginary part (dissipative)
 
-    pauli_re, coeffs_re = [], []
-    pauli_im, coeffs_im = [], []
-    #     hamiltonian_re = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
-    #     coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
-    # )
+    # === Real Part ===
+    # 1. On-site terms (Z on occupation qubits)
+    for i in range(N):
+        op = ['I'] * num_qubits
+        op[2*i] = 'Z'  # Occupation qubit
+        pauli_re.append(''.join(op))
+        coeffs_re.append(0.5 * eps[i])
 
-
-    # hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
-    #     coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
-    #              ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
-
-
-
-    # ===== Real Part (H_re) =====
-    #I like this 
-    
-    N  = n_sites * 2
-
-    for n in range(n_sites):
-        eps.append(1)
-    # hamiltonian_re = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
-    #     coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
-    # )
-
-
-    # hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
-    #     coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
-    #              ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
-
-    for i in range(n_sites):
-        j = 2*i
-        z_str = ['I']* N
-        z_str[j] = 'Z'
-        pauli_re.append(''.join(z_str))
-        coeffs_re.append(eps[i]/2)
-
-        z_str = ['I']* N
-        z_str[j+1] = 'Z'
-        pauli_re.append(''.join(z_str))
-        coeffs_re.append(-eps[i]/2)
-
-    #I like this too
-    # 2. Hopping terms (t)
-
-    for i in range(N-2):
-        # XX term
-        xx = ['I']*N
-        xx[i], xx[i+1] = 'X', 'X'
+    # 2. Hopping terms (XX + YY between adjacent sites)
+    for i in range(N-1):
+        # Hopping between site i (qubit 2i+1) and i+1 (qubit 2i+2)
+        xx = ['I'] * num_qubits
+        xx[2*i+1] = 'X'  # Phase qubit of site i
+        xx[2*i+2] = 'X'  # Occupation qubit of site i+1
         pauli_re.append(''.join(xx))
         coeffs_re.append(t)
-        
-        # YY term
-        yy = ['I']*N
-        yy[i], yy[i+1] = 'Y', 'Y'
+
+        yy = ['I'] * num_qubits
+        yy[2*i+1] = 'Y'
+        yy[2*i+2] = 'Y'
         pauli_re.append(''.join(yy))
         coeffs_re.append(t)
-    
-    # 3. Reservoir-induced XY/YX terms (only for edge pairs)
-    # Left edge (sites 0-1)
-    if n_sites >= 1:
-        xy = ['I']* N
-        xy[0], xy[1] = 'X', 'Y'
-        pauli_re.append(''.join(xy))
-        coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
-        
-        yx = ['I']* N
-        yx[0], yx[1] = 'Y', 'X'
-        pauli_re.append(''.join(yx))
-        coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
-    
-    # Right edge (sites n-2, n-1)
-    
-        xy = ['I']* N
-        xy[-2], xy[-1] = 'X', 'Y'
-        pauli_re.append(''.join(xy))
-        coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
-            
-        yx = ['I']* N
-        yx[-2], yx[-1] = 'Y', 'X'
-        pauli_re.append(''.join(yx))
-        coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
-    
-        # print(SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)))
 
-    # ===== Imaginary Part (H_im) =====
-    # 1. Dissipative XX/YY terms (edges only)
-    # Left edge
-    
-        xx = ['I']*N
-        xx[0], xx[1] = 'X', 'X'
-        pauli_im.append(''.join(xx))
-        coeffs_im.append(-gamma_L/4)
-        
-        yy = ['I']*N
-        yy[0], yy[1] = 'Y', 'Y'
-        pauli_im.append(''.join(yy))
-        coeffs_im.append(gamma_L/4)
-        
-    # Right edge
+    # 3. Reservoir couplings (left/right edges)
+    # Left reservoir (site 0: qubits 0,1)
+    xy = ['I'] * num_qubits
+    xy[0], xy[1] = 'X', 'Y'
+    pauli_re.append(''.join(xy))
+    coeffs_re.append(-0.25 * gamma_L * (1 - 2*F_L))
 
-        xx = ['I']*N
-        xx[-2], xx[-1] = 'X', 'X'
-        pauli_im.append(''.join(xx))
-        coeffs_im.append(-gamma_R/4)
-        
-        yy = ['I']*N
-        yy[-2], yy[-1] = 'Y', 'Y'
-        pauli_im.append(''.join(yy))
-        coeffs_im.append(gamma_R/4)
-    
-    # 2. Global identity term
-    pauli_im.append('I'*N)
-    coeffs_im.append((gamma_L + gamma_R)/2)
-    
-    # 3. Boundary Z terms
-    # Left reservoir
-    z_left = ['I']*N
+    yx = ['I'] * num_qubits
+    yx[0], yx[1] = 'Y', 'X'
+    pauli_re.append(''.join(yx))
+    coeffs_re.append(-0.25 * gamma_L * (1 - 2*F_L))
+
+    # Right reservoir (site N-1: qubits 2N-2, 2N-1)
+    xy = ['I'] * num_qubits
+    xy[-2], xy[-1] = 'X', 'Y'
+    pauli_re.append(''.join(xy))
+    coeffs_re.append(-0.25 * gamma_R * (1 - 2*F_R))
+
+    yx = ['I'] * num_qubits
+    yx[-2], yx[-1] = 'Y', 'X'
+    pauli_re.append(''.join(yx))
+    coeffs_re.append(-0.25 * gamma_R * (1 - 2*F_R))
+
+    # === Imaginary Part ===
+    # 1. Dissipators (acting on reservoir edges)
+    # Left (site 0)
+    xx = ['I'] * num_qubits
+    xx[0], xx[1] = 'X', 'X'
+    pauli_im.append(''.join(xx))
+    coeffs_im.append(-0.25 * gamma_L)
+
+    yy = ['I'] * num_qubits
+    yy[0], yy[1] = 'Y', 'Y'
+    pauli_im.append(''.join(yy))
+    coeffs_im.append(0.25 * gamma_L)
+
+    # Right (site N-1)
+    xx = ['I'] * num_qubits
+    xx[-2], xx[-1] = 'X', 'X'
+    pauli_im.append(''.join(xx))
+    coeffs_im.append(-0.25 * gamma_R)
+
+    yy = ['I'] * num_qubits
+    yy[-2], yy[-1] = 'Y', 'Y'
+    pauli_im.append(''.join(yy))
+    coeffs_im.append(0.25 * gamma_R)
+
+    # 2. Boundary chemical potentials
+    # Left (site 0)
+    z_left = ['I'] * num_qubits
     z_left[0] = 'Z'
     pauli_im.append(''.join(z_left))
-    coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
-    
-    # Right reservoir
-    z_right = ['I']*N
-    z_right[-1] = 'Z'
-    pauli_im.append(''.join(z_right))
-    coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+    coeffs_im.append(-0.25 * gamma_L * (1 - 2*F_L))
 
-    return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
+    # Right (site N-1)
+    z_right = ['I'] * num_qubits
+    z_right[-2] = 'Z'  # Occupation qubit of last site
+    pauli_im.append(''.join(z_right))
+    coeffs_im.append(-0.25 * gamma_R * (1 - 2*F_R))
+
+    return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), \
+           SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
+# def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
+#     """
+#     Returns H_re and H_im for a fermionic chain (1 qubit per site, no spin).
+    
+#     Args:
+#         n_sites: Number of physical sites (equals number of qubits)
+#         eps: List of on-site energies [eps_1, ..., eps_n]
+#         gamma_L, gamma_R: Left/right reservoir couplings
+#         F_L, F_R: Reservoir occupation factors (0 ≤ F ≤ 1)
+#         t: Hopping amplitude
+        
+#     Returns:
+#         H_re, H_im: Real and imaginary parts as SparsePauliOp
+#     """
+#     # Initialize Pauli lists and coefficients
+#     pauli_re, coeffs_re = [], []
+#     pauli_im, coeffs_im = [], []
+
+#     # ===== Real Part (H_re) =====
+#     #I like this 
+#     N = 2 * n_sites
+
+#     for i in range(n_sites):
+#         j = 2*i
+#         z_str = ['I']* N
+#         z_str[j] = 'Z'
+#         pauli_re.append(''.join(z_str))
+#         coeffs_re.append(eps[i]/2)
+
+#         z_str = ['I']* N
+#         z_str[j+1] = 'Z'
+#         pauli_re.append(''.join(z_str))
+#         coeffs_re.append(-eps[i]/2)
+#     #I like this too
+#     # 2. Hopping terms (t)
+
+#     for i in range(n_sites-1):
+#         # XX term
+#         xx = ['I']*N
+#         xx[2*i+1], xx[2*i+2] = 'X', 'X'
+#         pauli_re.append(''.join(xx))
+#         coeffs_re.append(t)
+        
+#         # YY term
+#         yy = ['I']*N
+#         yy[2*i+1], yy[2*i+2] = 'Y', 'Y'
+#         pauli_re.append(''.join(yy))
+#         coeffs_re.append(t)
+    
+#     # 3. Reservoir-induced XY/YX terms (only for edge pairs)
+#     # Left edge (sites 0-1)
+
+#     xy = ['I']*N
+#     xy[0], xy[1] = 'X', 'Y'
+#     pauli_re.append(''.join(xy))
+#     coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
+    
+#     yx = ['I']*N
+#     yx[0], yx[1] = 'Y', 'X'
+#     pauli_re.append(''.join(yx))
+#     coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
+
+# # Right edge (sites n-2, n-1)
+
+#     xy = ['I']*N
+#     xy[-2], xy[-1] = 'X', 'Y'
+#     pauli_re.append(''.join(xy))
+#     coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
+        
+#     yx = ['I']*N
+#     yx[-2], yx[-1] = 'Y', 'X'
+#     pauli_re.append(''.join(yx))
+#     coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
+
+# # ===== Imaginary Part (H_im) =====
+# # 1. Dissipative XX/YY terms (edges only)
+# # Left edge
+#     xx = ['I']*N
+#     xx[0], xx[1] = 'X', 'X'
+#     pauli_im.append(''.join(xx))
+#     coeffs_im.append(-gamma_L/4)
+    
+#     yy = ['I']*N
+#     yy[0], yy[1] = 'Y', 'Y'
+#     pauli_im.append(''.join(yy))
+#     coeffs_im.append(gamma_L/4)
+    
+# # Right edge
+
+#     xx = ['I']*N
+#     xx[-2], xx[-1] = 'X', 'X'
+#     pauli_im.append(''.join(xx))
+#     coeffs_im.append(-gamma_R/4)
+    
+#     yy = ['I']*N
+#     yy[-2], yy[-1] = 'Y', 'Y'
+#     pauli_im.append(''.join(yy))
+#     coeffs_im.append(gamma_R/4)
+    
+#     # 2. Global identity term
+#     pauli_im.append('I'*N)
+#     coeffs_im.append((gamma_L + gamma_R)/2)
+    
+#     # 3. Boundary Z terms
+#     # Left reservoir
+#     z_left = ['I']*N
+#     z_left[0] = 'Z'
+#     pauli_im.append(''.join(z_left))
+#     coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
+    
+#     # Right reservoir
+#     z_right = ['I']*N
+#     z_right[-1] = 'Z'
+#     pauli_im.append(''.join(z_right))
+#     coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+
+#     return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
+        
+
+# def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
+#     """
+#     Returns H_re and H_im for a fermionic chain (1 qubit per site, no spin).
+    
+#     Args:
+#         n_sites: Number of physical sites (equals number of qubits)
+#         eps: List of on-site energies [eps_1, ..., eps_n]
+#         gamma_L, gamma_R: Left/right reservoir couplings
+#         F_L, F_R: Reservoir occupation factors (0 ≤ F ≤ 1)
+#         t: Hopping amplitude
+        
+#     Returns:
+#         H_re, H_im: Real and imaginary parts as SparsePauliOp
+#     """
+#     # Initialize Pauli lists and coefficients
+
+#     pauli_re, coeffs_re = [], []
+#     pauli_im, coeffs_im = [], []
+#     #     hamiltonian_re = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
+#     #     coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
+#     # )
+
+
+#     # hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
+#     #     coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
+#     #              ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
+
+
+
+#     # ===== Real Part (H_re) =====
+#     #I like this 
+    
+#     N  = n_sites * 2
+
+#     for n in range(n_sites):
+#         eps.append(1)
+#     # hamiltonian_re = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
+#     #     coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
+#     # )
+
+
+#     # hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
+#     #     coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
+#     #              ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
+
+#     for i in range(n_sites):
+#         j = 2*i
+#         z_str = ['I']* N
+#         z_str[j] = 'Z'
+#         pauli_re.append(''.join(z_str))
+#         coeffs_re.append(eps[i]/2)
+
+#         z_str = ['I']* N
+#         z_str[j+1] = 'Z'
+#         pauli_re.append(''.join(z_str))
+#         coeffs_re.append(-eps[i]/2)
+
+#     #I like this too
+#     # 2. Hopping terms (t)
+
+#     for i in range(n_sites-1):
+#         # XX term
+
+#         xx = ['I']*N
+#         xx[i], xx[2*i+1] = 'X', 'X'
+#         pauli_re.append(''.join(xx))
+#         coeffs_re.append(t)
+        
+#         # YY term
+#         yy = ['I']*N
+#         yy[i], yy[2*i+1] = 'Y', 'Y'
+#         pauli_re.append(''.join(yy))
+#         coeffs_re.append(t)
+    
+#     # 3. Reservoir-induced XY/YX terms (only for edge pairs)
+#     # Left edge (sites 0-1)
+  
+#     xy = ['I']* N
+#     xy[0], xy[1] = 'X', 'Y'
+#     pauli_re.append(''.join(xy))
+#     coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
+    
+#     yx = ['I']* N
+#     yx[0], yx[1] = 'Y', 'X'
+#     pauli_re.append(''.join(yx))
+#     coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
+
+# # Right edge (sites n-2, n-1)
+
+#     xy = ['I']* N
+#     xy[-2], xy[-1] = 'X', 'Y'
+#     pauli_re.append(''.join(xy))
+#     coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
+        
+#     yx = ['I']* N
+#     yx[-2], yx[-1] = 'Y', 'X'
+#     pauli_re.append(''.join(yx))
+#     coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
+
+#         # print(SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)))
+
+#     # ===== Imaginary Part (H_im) =====
+#     # 1. Dissipative XX/YY terms (edges only)
+#     # Left edge
+
+#     xx = ['I']*N
+#     xx[0], xx[1] = 'X', 'X'
+#     pauli_im.append(''.join(xx))
+#     coeffs_im.append(-gamma_L/4)
+    
+#     yy = ['I']*N
+#     yy[0], yy[1] = 'Y', 'Y'
+#     pauli_im.append(''.join(yy))
+#     coeffs_im.append(gamma_L/4)
+        
+#     # Right edge
+
+#     xx = ['I']*N
+#     xx[-2], xx[-1] = 'X', 'X'
+#     pauli_im.append(''.join(xx))
+#     coeffs_im.append(-gamma_R/4)
+    
+#     yy = ['I']*N
+#     yy[-2], yy[-1] = 'Y', 'Y'
+#     pauli_im.append(''.join(yy))
+#     coeffs_im.append(gamma_R/4)
+
+#     # 2. Global identity term
+#     pauli_im.append('I'*N)
+#     coeffs_im.append((gamma_L + gamma_R)/2)
+    
+#     # 3. Boundary Z terms
+#     # Left reservoir
+#     z_left = ['I']*N
+#     z_left[0] = 'Z'
+#     pauli_im.append(''.join(z_left))
+#     coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
+    
+#     # Right reservoir
+#     z_right = ['I']*N
+#     z_right[-1] = 'Z'
+#     pauli_im.append(''.join(z_right))
+#     coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+
+#     return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
         
 
     
@@ -234,7 +457,7 @@ def hamiltonian_generation_simple():
     """
     return SparsePauliOp(["IX", "XI"], coeffs=[1, -1])  # Example coefficients
 
-def statevector_to_densitymatrix(state_vector):
+def statevector_to_densitymatrix(v):
     """
     Converts a Statevector to a density matrix.
 
@@ -245,71 +468,144 @@ def statevector_to_densitymatrix(state_vector):
         (numpy.ndarray) The corresponding density matrix.
     """
     
-    return np.outer(state_vector, np.conj(state_vector))
+    m = int(np.sqrt(len(v)))
+    return np.reshape(v, (m, m), order='F')
 
-def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values,N):
+# def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values,N):
+#     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
+#     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
+
+#     number_operators = [create_number_operator(N, i) for i in range(N)]
+
+#     print("Number op: ",number_operators[0])
+
+#     # Perform time evolution
+#     results_history = [[] for _ in range(N)]
+   
+#    # num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data)
+#    #                          @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
+#     # for i, op in enumerate(number_operators):
+#     #         op_matrix = op.to_matrix()
+
+#     #         initial_exp_val = [np.trace(statevector_to_densitymatrix(init_state.data)
+#     #                                     @ op_matrix) / np.trace(statevector_to_densitymatrix(init_state.data))
+
+#     #         ]
+            
+#     #         init_state.expectation_value(op).real
+#     #         results_history[i].append(initial_exp_val)
+
+#     for i, op in enumerate(number_operators):
+        
+#         op_matrix = op.to_matrix()
+#         density_matrix = statevector_to_densitymatrix(init_state.data)
+
+
+#         print("Number Op: ", op_matrix)
+#         print("Density Matrix: ", density_matrix)
+#         #density_matrix = np.where(np.abs(density_matrix) < 1e-10, 0, density_matrix)
+#         initial_exp_val = np.trace(density_matrix @ op_matrix).real
+    
+#         results_history[i].append(initial_exp_val)
+#         # initial_exp_val = (np.trace(density_matrix @ op_matrix) / np.trace(density_matrix)).real
+        
+
+   
+#         print("This is the init valie: ",initial_exp_val)
+
+
+#     #trace = np.trace(statevector_to_densitymatrix(Statevector(ansatz.assign_parameters(init_param_values)).data))
+#     print(results_history[0])
+#     # --- Time Evolution Loop ---
+#     for t in range(nt):
+#         print(f"Step {t+1} out of {nt}")
+#         # Real and Imaginary evolution steps
+#         evolution_problem_re = TimeEvolutionProblem(ham_real, dt)
+#         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
+#         evolution_result_re = var_qrte.evolve(evolution_problem_re)
+#         init_param_values = evolution_result_re.parameter_values[-1]
+
+#         evolution_problem_im = TimeEvolutionProblem(ham_imag, dt)
+#         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
+#         evolution_result_im = var_qite.evolve(evolution_problem_im)
+#         init_param_values = evolution_result_im.parameter_values[-1]
+
+
+
+#         # --- Measurement ---
+#         current_psi = Statevector(ansatz.assign_parameters(init_param_values))
+#         norm = np.linalg.norm(current_psi.data)
+#         current_psi = current_psi / norm if norm != 0 else current_psi
+#         #current_psi = current_psi / np.linalg.norm(current_psi.data)
+#         # Calculate expectation value for each qubit's number operator
+#         for i, op in enumerate(number_operators):
+#             op_matrix = op.to_matrix()
+         
+#             density_matrix = statevector_to_densitymatrix(current_psi.data)
+#             #density_matrix = np.where(np.abs(density_matrix) < 1e-10, 0, density_matrix)
+#             exp_val = np.trace(density_matrix @ op_matrix).real
+#             results_history[i].append(exp_val)
+#             # exp_val = (np.trace(statevector_to_densitymatrix(
+#             # Statevector(ansatz.assign_parameters(init_param_values)).data) @ op_matrix) / trace)
+
+            
+      
+#     return results_history
+def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_values, N):
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-    number_operators = [create_number_operator(2*N, i) for i in range(N)]
-
-    print("Number op: ",number_operators[0])
-
-    # Perform time evolution
+    number_operators = [create_number_operator(N, i) for i in range(N)]
     results_history = [[] for _ in range(N)]
-   
-        # Initial expectation values
-    print("Initial expectation values:")
-   
-   # num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data)
-   #                          @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
-    # for i, op in enumerate(number_operators):
-    #         op_matrix = op.to_matrix()
 
-    #         initial_exp_val = [np.trace(statevector_to_densitymatrix(init_state.data)
-    #                                     @ op_matrix) / np.trace(statevector_to_densitymatrix(init_state.data))
-
-    #         ]
-            
-    #         init_state.expectation_value(op).real
-    #         results_history[i].append(initial_exp_val)
 
     for i, op in enumerate(number_operators):
-        # Method 1: Manual computation (if init_state.data is a NumPy array)
         op_matrix = op.to_matrix()
         density_matrix = statevector_to_densitymatrix(init_state.data)
+
+
+        print("Number Op: ", op_matrix)
+        print("Density Matrix: ", density_matrix)
+  
         initial_exp_val = np.trace(density_matrix @ op_matrix).real
-        
-        # Method 2: Direct expectation (if init_state supports it)
-        # initial_exp_val = init_state.expectation_value(op).real
     
         results_history[i].append(initial_exp_val)
-        print(initial_exp_val)
-        
-    print(results_history[0])
-    # --- Time Evolution Loop ---
+
     for t in range(nt):
-        print(f"Step {t+1} out of {nt}")
-        # Real and Imaginary evolution steps
-        evolution_problem_re = TimeEvolutionProblem(ham_real, dt)
+        print("Step", t , "out of", nt)
+        # Real evolution
+        evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
         var_qrte = VarQRTE(ansatz, init_param_values, real_var_principle, num_timesteps=1)
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
+        
+        norm_squared = 1.0 
+        
+        psi_after_re = Statevector(ansatz.assign_parameters(init_param_values))
+        exp_val_H_imag = psi_after_re.expectation_value(ham_imag).real
+        norm_squared *= (1 + exp_val_H_imag * dt)
 
-        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt)
+        # Imaginary evolution
+        evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
 
-        # --- Measurement ---
-        current_psi = Statevector(ansatz.assign_parameters(init_param_values))
-        norm = np.linalg.norm(current_psi.data)
-        normalized_psi = current_psi / norm if norm != 0 else current_psi
-       
-        # Calculate expectation value for each qubit's number operator
+         # Normalized so the trace is always 1
+        
+        final_psi_normalized = Statevector(ansatz.assign_parameters(init_param_values))
+        
+        # Create the physically correct, unnormalized density matrix by scaling with the tracked norm
+        rho_unnormalized_vec = np.sqrt(norm_squared) * final_psi_normalized.data
+        rho_matrix = statevector_to_densitymatrix(rho_unnormalized_vec)
+
+        # Extract expectation values
+        true_trace = np.trace(rho_matrix)
+    
         for i, op in enumerate(number_operators):
-            exp_val = normalized_psi.expectation_value(op).real
+            op_matrix = op.to_matrix()
+            exp_val = np.trace(rho_matrix @ op_matrix)/true_trace
             results_history[i].append(exp_val)
-       
 
     return results_history
+
