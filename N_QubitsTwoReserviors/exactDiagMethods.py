@@ -130,9 +130,8 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         Superoperator = Liouvillian(H, L_K)
         d = len(H)
 
-      
 
-
+        print("Hello from here")
         # Time evolution operator
         U = scipy.linalg.expm(Superoperator * dt)
         
@@ -162,9 +161,6 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
                     exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
                     expectation_value_history[site].append(exp_val)
            
-
-
-    
 
 
 

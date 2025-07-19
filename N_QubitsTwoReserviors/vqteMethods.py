@@ -45,19 +45,21 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
 
 
     for i in range(n_sites):
+       
+        z_str = ['I']* N
+        z_str[i] = 'Z'
+        pauli_re.append(''.join(z_str))
+        coeffs_re.append(eps[i]/2)
+
         z_str = ['I']* N
         z_str[i+1] = 'Z'
         pauli_re.append(''.join(z_str))
         coeffs_re.append(-eps[i]/2)
 
-        z_str = ['I']* N
-        z_str[i] = 'Z'
-        pauli_re.append(''.join(z_str))
-        coeffs_re.append(eps[i]/2)
     #I like this too
     # 2. Hopping terms (t)
 
-    for i in range(n_sites-1):
+    for i in range(N-2):
         # XX term
         xx = ['I']*N
         xx[i], xx[i+1] = 'X', 'X'
@@ -239,8 +241,6 @@ def statevector_to_densitymatrix(state_vector):
     return np.outer(state_vector, np.conj(state_vector))
 
 def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_values,N):
-    print("This should say 1: " , N)
-
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
