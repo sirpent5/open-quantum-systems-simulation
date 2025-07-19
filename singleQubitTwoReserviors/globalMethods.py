@@ -67,14 +67,12 @@ def build_initial_states(ham_real):
     vqte_init_state = Statevector(ansatz.assign_parameters(init_param_values))
     
 
-    # # Copy initial state data to a vector
-    # psi_vector = vqte_init_state.data
+    # Copy initial state data to a vector
+    psi_vector = vqte_init_state.data
 
-    # # Reshape to a matrix
-    # rho_matrix = psi_vector.reshape(2 ,2, order='F')
-    # exact_diag_initial_state = np.matrix(rho_matrix)
-
-    exact_diag_initial_state  = []
+    # Reshape to a matrix
+    rho_matrix = psi_vector.reshape(2 ,2, order='F')
+    exact_diag_initial_state = np.matrix(rho_matrix)
 
     return vqte_init_state, exact_diag_initial_state, ansatz, init_param_values
 
@@ -85,7 +83,7 @@ def output_results(vqte_results, exact_diag_results, time, nt,time_points):
     time_axis = np.linspace(0, time, nt+1)
  
     # Plot results
-    #plt.plot(time_points, exact_diag_results, label='Exact Diag Result', marker='', linestyle='solid')
+    plt.plot(time_points, exact_diag_results, label='Exact Diag Result', marker='', linestyle='solid')
     plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
 
     # Titles and finalize plot

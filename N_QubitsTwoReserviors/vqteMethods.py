@@ -42,17 +42,24 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
 
     for n in range(n_sites):
         eps.append(1)
+    # hamiltonian_re = SparsePauliOp( ["IZ", "ZI", "XY", "YX"],
+    #     coeffs=[(-eps/2),(eps/2), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))),((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R))))]
+    # )
 
+
+    # hamiltonian_im = SparsePauliOp( ["XX", "YY", "II", "IZ", "ZI"],
+    #     coeffs=[-(gamma_L+gamma_R)/4, (gamma_L+gamma_R)/4, (gamma_L+gamma_R)/2,
+    #              ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))), ((-1/4)*((gamma_L*(1-2*F_L))+(gamma_R*(1-2*F_R)))) ] )
 
     for i in range(n_sites):
-       
+        j = 2*i
         z_str = ['I']* N
-        z_str[i] = 'Z'
+        z_str[j] = 'Z'
         pauli_re.append(''.join(z_str))
         coeffs_re.append(eps[i]/2)
 
         z_str = ['I']* N
-        z_str[i+1] = 'Z'
+        z_str[j+1] = 'Z'
         pauli_re.append(''.join(z_str))
         coeffs_re.append(-eps[i]/2)
 
@@ -244,16 +251,40 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-    number_operators = [create_number_operator(N, i) for i in range(N)]
+    number_operators = [create_number_operator(2*N, i) for i in range(N)]
+
+    print("Number op: ",number_operators[0])
+
     # Perform time evolution
     results_history = [[] for _ in range(N)]
-    print(results_history)
+   
         # Initial expectation values
     print("Initial expectation values:")
    
+   # num_op_list = [np.trace(statevector_to_densitymatrix(init_state.data)
+   #                          @ np.array([[0, 0], [0, 1]])) / np.trace(statevector_to_densitymatrix(init_state.data))]
+    # for i, op in enumerate(number_operators):
+    #         op_matrix = op.to_matrix()
+
+    #         initial_exp_val = [np.trace(statevector_to_densitymatrix(init_state.data)
+    #                                     @ op_matrix) / np.trace(statevector_to_densitymatrix(init_state.data))
+
+    #         ]
+            
+    #         init_state.expectation_value(op).real
+    #         results_history[i].append(initial_exp_val)
+
     for i, op in enumerate(number_operators):
-            initial_exp_val = init_state.expectation_value(op).real
-            results_history[i].append(initial_exp_val)
+        # Method 1: Manual computation (if init_state.data is a NumPy array)
+        op_matrix = op.to_matrix()
+        density_matrix = statevector_to_densitymatrix(init_state.data)
+        initial_exp_val = np.trace(density_matrix @ op_matrix).real
+        
+        # Method 2: Direct expectation (if init_state supports it)
+        # initial_exp_val = init_state.expectation_value(op).real
+    
+        results_history[i].append(initial_exp_val)
+        print(initial_exp_val)
         
     print(results_history[0])
     # --- Time Evolution Loop ---

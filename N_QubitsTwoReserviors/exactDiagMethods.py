@@ -131,7 +131,6 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         d = len(H)
 
 
-        print("Hello from here")
         # Time evolution operator
         U = scipy.linalg.expm(Superoperator * dt)
         
