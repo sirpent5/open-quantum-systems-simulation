@@ -19,8 +19,8 @@ def verify_density_matrix(rho):
 
 def build_initial_states(ham_real):
 
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 2)
-    N = int(ham_real.num_qubits/2)
+    ansatz = EfficientSU2(ham_real.num_qubits, reps = 1)
+    N = int(ham_real.num_qubits)
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
         #init_param_values[ansatz.parameters[i]] = np.random.uniform(0, 2 * np.pi)
@@ -31,10 +31,9 @@ def build_initial_states(ham_real):
     psi_vector = init_state.data
 
 
-    rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
+    rho_matrix = psi_vector.reshape(N ,N, order='F')
     exact_diag_initial_state = np.matrix(rho_matrix)
 
-   
     return init_state, exact_diag_initial_state, ansatz, init_param_values
 
 
