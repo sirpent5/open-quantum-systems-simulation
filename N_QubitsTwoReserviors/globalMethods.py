@@ -19,7 +19,7 @@ def verify_density_matrix(rho):
 
 def build_initial_states(ham_real):
 
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 8)
+    ansatz = EfficientSU2(ham_real.num_qubits, reps = 2)
 
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
@@ -36,9 +36,29 @@ def build_initial_states(ham_real):
     return init_state, initial_state, ansatz, init_param_values
 
 
+# def build_initial_states(ham_real):
+
+#     ansatz = EfficientSU2(ham_real.num_qubits, reps = 2)
+#     N = int(ham_real.num_qubits)
+#     init_param_values = {}
+#     for i in range(len(ansatz.parameters)):
+#         #init_param_values[ansatz.parameters[i]] = np.random.uniform(0, 2 * np.pi)
+#         init_param_values[ansatz.parameters[i]] = 2*np.pi
+
+#     init_state = Statevector(ansatz.assign_parameters(init_param_values))
+    
+#     psi_vector = init_state.data
 
 
-def output_results(vqte_results, exact_diag_results, time, nt, time_points):
+#     rho_matrix = psi_vector.reshape(N ,N, order='F')
+#     exact_diag_initial_state = np.matrix(rho_matrix)
+
+   
+#     return init_state, exact_diag_initial_state, ansatz, init_param_values
+
+
+
+def output_results(vqte_results, exact_diag_results, time, nt):
     """
     Plots a comparison of VQTE and exact diagonalization results.
     """
@@ -49,11 +69,12 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
 
     # Plot Exact Diagonalization Results
     # Ensure the time axis slice matches the length of the results data
+    
     for site_idx in range(len(exact_diag_results)):
         num_points = len(exact_diag_results[site_idx])
         plt.plot(time_axis[:num_points], 
                  exact_diag_results[site_idx], 
-                 label=f'Exact Diag Site {site_idx} Occupation', 
+                 label=f'Exact Diag Site {site_idx+1} Occupation', 
                  marker='', 
                  linestyle='dashed')
 
@@ -63,7 +84,7 @@ def output_results(vqte_results, exact_diag_results, time, nt, time_points):
         num_points = len(vqte_results[site_idx])
         plt.plot(time_axis[:num_points], 
                  vqte_results[site_idx], 
-                 label=f'VQTE Site {site_idx} Occupation', 
+                 label=f'VQTE Site {site_idx+1} Occupation', 
                  marker='', 
                  linestyle='solid')
 

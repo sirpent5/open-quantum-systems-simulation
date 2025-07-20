@@ -44,13 +44,13 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
         xx = ['I']*n_sites
         xx[i], xx[i+1] = 'X', 'X'
         pauli_re.append(''.join(xx))
-        coeffs_re.append(t)
+        coeffs_re.append(t/2)
         
         # YY term
         yy = ['I']*n_sites
         yy[i], yy[i+1] = 'Y', 'Y'
         pauli_re.append(''.join(yy))
-        coeffs_re.append(t)
+        coeffs_re.append(t/2)
     
     # 3. Reservoir-induced XY/YX terms (only for edge pairs)
     # Left edge (sites 0-1)
