@@ -102,7 +102,8 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
     # Construct the Liouvillian superoperator
     Superoperator = Liouvillian(H, L_K)
     
-
+    for thing in L_K:
+        print("Operator: ", thing )
 
     # Create time evolution operator
     U = scipy.linalg.expm(Superoperator * dt)

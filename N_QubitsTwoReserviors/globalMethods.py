@@ -70,7 +70,7 @@ def output_results(vqte_results, exact_diag_results, time, nt):
                     marker='', 
                     linestyle='dashed')
     except Exception as e:
-        print("Can't do it")
+        plt.plot(time_axis, exact_diag_results, label='Exact Classical Solution', marker='', linestyle='solid')
 
     # Plot VQTE Results
     # Ensure the time axis slice matches the length of the results data

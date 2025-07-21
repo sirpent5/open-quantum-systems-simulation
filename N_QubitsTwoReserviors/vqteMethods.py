@@ -227,10 +227,6 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     for i, op in enumerate(number_operators):
         op_matrix = op.to_matrix()
         density_matrix = statevector_to_densitymatrix(init_state.data)
-
-
-        print("Number Op: ", op_matrix)
-        print("Density Matrix: ", density_matrix)
   
         initial_exp_val = np.trace(density_matrix @ op_matrix).real
     
