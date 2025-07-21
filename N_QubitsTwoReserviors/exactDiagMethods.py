@@ -196,8 +196,8 @@ def build_exact_diag_hamiltonian(J, epsilon):
     
     # Hopping terms 
     for j in range(N-1):
-        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_x, Sigma_x)
-        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_y, Sigma_y) 
+        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, -Sigma_x, Sigma_x)
+        H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, -Sigma_y, Sigma_y) 
     return H
 
 

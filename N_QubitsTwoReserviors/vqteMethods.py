@@ -90,18 +90,18 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
 
         xx_str = ['I']* N
         xx_str[n_sites+i], xx_str[n_sites+i+1] = 'X', 'X'
-        coeffs_re.append(-J)
         pauli_re.append(''.join(xx_str))
+        coeffs_re.append(J)
 
         yy_str = ['I']* N
         yy_str[i], yy_str[i+1] = 'Y', 'Y'
-        pauli_re.append(''.join(yy_str))
         coeffs_re.append(-J)
+        pauli_re.append(''.join(yy_str))
 
         yy_str = ['I']* N
         yy_str[n_sites+i], yy_str[n_sites+i+1] = 'Y', 'Y'
-        coeffs_re.append(-J)
         pauli_re.append(''.join(yy_str))
+        coeffs_re.append(J)
 
 
 
@@ -168,8 +168,6 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
 
     ##YY Terms Right
-
-
 
 
 
