@@ -73,15 +73,21 @@ def build_number_op_list(N):
     """
     return [Enlarge_Matrix_site_j(j, N, numberop) for j in range(N)]
 
-# def perform_exact_diag(gamma, F_L, F_R, dt, nt, initial_state,H,N,eps):
 
+
+
+
+
+# def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state,H,N):
+
+#     print("This is N: ", N)
     
 #     L_K = []
     
-#     L_K.append(np.sqrt(gamma*(1-F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
-#     L_K.append(np.sqrt(gamma*F_L)*Enlarge_Matrix_site_j(0, N, Sigma_plus)) 
-#     L_K.append(np.sqrt(gamma *(1-F_R))*Enlarge_Matrix_site_j(N-1, N, Sigma_minus))
-#     L_K.append(np.sqrt(gamma * F_R)*Enlarge_Matrix_site_j(N-1, N, Sigma_plus))
+#     L_K.append(np.sqrt(gamma_L*(1-F_L))*Enlarge_Matrix_site_j(0, N, Sigma_minus))  
+#     L_K.append(np.sqrt(gamma_L*F_L)*Enlarge_Matrix_site_j(0, N, Sigma_plus)) 
+#     L_K.append(np.sqrt(gamma_R *(1-F_R))*Enlarge_Matrix_site_j(N-1, N, Sigma_minus))
+#     L_K.append(np.sqrt(gamma_R * F_R)*Enlarge_Matrix_site_j(N-1, N, Sigma_plus))
      
 #     Superoperator = Liouvillian(H, L_K)
 
@@ -95,11 +101,10 @@ def build_number_op_list(N):
 
 #     expectation_value_history= [[] for qubit in range(N)]
 
-#     time_points = [0]
-
 #     rho_matrix = initial_state / np.trace(initial_state)
 #     for site in range(N):
-#         expectation_value_history[site].append(np.trace(number_ops[site] @ rho_matrix))
+#         expectation_value_history[site].append(np.trace(number_ops[site] @ rho_matrix)/np.trace(initial_state))
+#         print("The number op I am using!", number_ops[site])
 
 
 
@@ -113,9 +118,8 @@ def build_number_op_list(N):
 
 #         for site in range(N):
 #             expectation_value_history[site].append(np.trace(number_ops[site] @ rho_matrix))
-           
-#         time_points.append(step * dt)
-#     return expectation_value_history, time_points
+
+#     return expectation_value_history
 def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
 
         # Build Lindblad operators
@@ -138,7 +142,7 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         rho_t = initial_state.reshape(d**2, 1, order='F')
         number_ops = build_number_op_list(N)
         expectation_value_history = [[] for _ in range(N)]
-        time_points = [0]
+     
 
         # Initial measurements
         rho_matrix = initial_state.copy()
@@ -149,19 +153,30 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
             print("Exact diag initial:" , exp_val)
            
 
-        # Time evolution loop
+        # # Time evolution loop
+        # for step in range(1, nt+1):
+            
+        #         rho_t = U @ rho_t
+        #         rho_matrix = rho_t.reshape(d, d, order='F')
+        #         # Store results
+   
+        #         rho_matrix = rho_matrix / np.trace(rho_matrix)
+
+        #         for site in range(N):
+        #             exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
+        #             expectation_value_history[site].append(exp_val)
+
         for step in range(1, nt+1):
-                time_points.append(step * dt)
                 rho_t = U @ rho_t
                 rho_matrix = rho_t.reshape(d, d, order='F')
                 # Store results
    
-                rho_matrix = rho_matrix / np.trace(rho_matrix)
-                
+          
+
                 for site in range(N):
                     exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
                     expectation_value_history[site].append(exp_val)
- 
+
         return expectation_value_history
 
 

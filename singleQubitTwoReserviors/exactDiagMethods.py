@@ -106,6 +106,8 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
 
     # Create time evolution operator
     U = scipy.linalg.expm(Superoperator * dt)
+
+    initial_state = initial_state / np.trace(initial_state)
     rho_t = initial_state.reshape(4, 1)  # Vectorized state
 
     # Initialize history lists
