@@ -9,11 +9,6 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.quantum_info import SparsePauliOp
 import numpy as np
 
-def jordan_wigner_string(site, n_sites):
-    """Create the Jordan-Wigner string (Z operators) up to a given site."""
-    if site == 0:
-        return ''
-    return 'Z' * site
 
         
 def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
@@ -150,6 +145,11 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     pauli_im.append(''.join(xx_str))
     coeffs_im.append(-gamma_R/4)
 
+    yy_str = ['I']* N
+    yy_str[n_sites-1] = 'Y'
+    yy_str[N-1]= 'Y'
+    pauli_im.append(''.join(yy_str))
+    coeffs_im.append(0.25*gamma_R)
 
     ##II term Right
     I_str = ['I'] * N
@@ -169,11 +169,7 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
 
     ##YY Terms Right
 
-    yy_str = ['I']* N
-    yy_str[n_sites-1] = 'Y'
-    yy_str[N-1]= 'Y'
-    pauli_im.append(''.join(yy_str))
-    coeffs_im.append(0.25*gamma_R)
+
 
 
 

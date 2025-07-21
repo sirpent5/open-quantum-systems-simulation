@@ -156,7 +156,8 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
                 rho_matrix = rho_t.reshape(d, d, order='F')
                 # Store results
    
-
+                rho_matrix = rho_matrix / np.trace(rho_matrix)
+                
                 for site in range(N):
                     exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
                     expectation_value_history[site].append(exp_val)
