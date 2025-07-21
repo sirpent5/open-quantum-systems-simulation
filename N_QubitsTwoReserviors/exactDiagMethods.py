@@ -142,30 +142,21 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
 
         # Initial measurements
         rho_matrix = initial_state.copy()
-       
         for site in range(N):
-            exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
-            expectation_value_history[site].append(exp_val)
-            print("Exact diag initial:" , exp_val)
-           
+            expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
 
+        
         # Time evolution loop
         for step in range(1, nt+1):
                 time_points.append(step * dt)
                 rho_t = U @ rho_t
                 rho_matrix = rho_t.reshape(d, d, order='F')
                 # Store results
-   
-
                 for site in range(N):
-                    exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
-                    expectation_value_history[site].append(exp_val)
-           
-
-
+                    expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
 
                 
-        return expectation_value_history
+        return expectation_value_history, np.array(time_points)
 
 
 def build_exact_diag_hamiltonian(J, epsilon):
@@ -185,5 +176,4 @@ def build_exact_diag_hamiltonian(J, epsilon):
         H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_x, Sigma_x)
         H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_y, Sigma_y) 
     return H
-
 
