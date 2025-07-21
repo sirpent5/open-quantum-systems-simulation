@@ -37,124 +37,108 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
     # ===== Real Part (H_re) =====
     #I like this 
     N = 2 * n_sites
-
+    eps_index = 0
     for i in range(n_sites):
-        j = 2*i
+  
         z_str = ['I']* N
-        z_str[j] = 'Z'
+        z_str[i] = 'Z'
         pauli_re.append(''.join(z_str))
-        coeffs_re.append(eps[i]/2)
+        coeffs_re.append(eps[eps_index]/2)
 
         z_str = ['I']* N
-        z_str[j+1] = 'Z'
+        z_str[i+n_sites] = 'Z'
         pauli_re.append(''.join(z_str))
-        coeffs_re.append(-eps[i]/2)
+        coeffs_re.append(-eps[eps_index]/2)
 
-    # 2. Hopping terms (t)
+        eps_index += 1
 
-    for i in range(n_sites-1):
-        # XZX term
-        xzx = ['I']*N
-        xzx[2*i], xzx[2*i+1], xzx[2*i+2] = 'X','Z', 'X'
-        pauli_re.append(''.join(xzx))
-        coeffs_re.append(t/2)
-        
-        # YZY term
-        yzy = ['I']*N
-        yzy[2*i],yzy[2*i+1], yzy[2*i+2] = 'Y', 'Z', 'Y'
-        pauli_re.append(''.join(yzy))
-        coeffs_re.append(t/2)
+    # Dissipation for left and right sides
 
-        xzx = ['I']*N
-        xzx[2*i+1], xzx[2*i+2], xzx[2*i+3] = 'X','Z', 'X'
-        pauli_re.append(''.join(xzx))
-        coeffs_re.append(t/2)
-        
-        # YZY term
-        yzy = ['I']*N
-        yzy[2*i+1],yzy[2*i+2], yzy[2*i+3] = 'Y', 'Z', 'Y'
-        pauli_re.append(''.join(yzy))
-        coeffs_re.append(t/2)
+    xy_str = ['I']* N
+    xy_str[0] = 'X'
+    xy_str[n_sites] = 'Y'
+    pauli_re.append(''.join(xy_str))
+    coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
+
+    yx_str = ['I']* N
+    yx_str[0] = 'Y'
+    yx_str[n_sites] = 'X'
+    pauli_re.append(''.join(yx_str))
+    coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
 
     
+    yx_str = ['I']* N
+    yx_str[n_sites - 1] = 'Y'
+    yx_str[N-1] = 'X'
+    pauli_re.append(''.join(yx_str))
+    coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
 
+    xy_str = ['I']* N
+    xy_str[n_sites -1] = 'X'
+    xy_str[N-1] = 'Y'
+    pauli_re.append(''.join(xy_str))
+    coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
 
-    for q1, q2 in [(0, 1)]:  
-       
-        xy = ['I'] * N
-        xy[q1] = 'X'
-        xy[q2] = 'Y'
-        pauli_re.append(''.join(xy))
-        coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
-     
-
-        yx = ['I'] * N
-        yx[q1] = 'Y'
-        yx[q2] = 'X'
-        pauli_re.append(''.join(yx))
-        coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
-
-
-    # Right edge (sites n-1)
-    for q1, q2 in [(N-2, N-1)]:  
-        # XY term
-        xy = ['I'] * N
-        xy[q1] = 'X'
-        xy[q2] = 'Y'
-        pauli_re.append(''.join(xy))
-        coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
-        print("Coeff",-0.25*gamma_R*(1-2*F_R))
-
-
-        # YX term
-        yx = ['I'] * N
-        yx[q1] = 'Y'
-        yx[q2] = 'X'
-        pauli_re.append(''.join(yx))
-        coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
 
 
 # ===== Imaginary Part (H_im) =====
-# 1. Dissipative XX/YY terms (edges only)
-# Left edge
-    xx = ['I']*N
-    xx[0], xx[1] = 'X', 'X'
-    pauli_im.append(''.join(xx))
-    coeffs_im.append(-gamma_L/4)
-    
-    yy = ['I']*N
-    yy[0], yy[1] = 'Y', 'Y'
-    pauli_im.append(''.join(yy))
-    coeffs_im.append(gamma_L/4)
-    
-# Right edge
 
-    xx = ['I']*N
-    xx[-2], xx[-1] = 'X', 'X'
-    pauli_im.append(''.join(xx))
+    xx_str = ['I']* N
+    xx_str[0] = 'X'
+    xx_str[n_sites] = 'X'
+    pauli_im.append(''.join(xx_str))
+    coeffs_im.append(-gamma_L/4)
+
+    yx_str = ['I']* N
+    yx_str[0] = 'Y'
+    yx_str[n_sites] = 'X'
+    pauli_im.append(''.join(yx_str))
+    coeffs_im.append(gamma_L/4)
+
+    xx_str = ['I']* N
+    xx_str[n_sites-1] = 'X'
+    xx_str[N-1] = 'X'
+    pauli_im.append(''.join(xx_str))
     coeffs_im.append(-gamma_R/4)
-    
-    yy = ['I']*N
-    yy[-2], yy[-1] = 'Y', 'Y'
-    pauli_im.append(''.join(yy))
+
+    yx_str = ['I']* N
+    yx_str[n_sites - 1] = 'Y'
+    yx_str[N-1] = 'X'
+    pauli_im.append(''.join(yx_str))
     coeffs_im.append(gamma_R/4)
-    
-    # 2. Global identity term
-    pauli_im.append('I'*N)
-    coeffs_im.append((gamma_L + gamma_R)/2)
-    
-    # # 3. Boundary Z terms
-    # # Left reservoir
-    # z_left = ['I']*N
-    # z_left[0] = 'Z'
-    # pauli_im.append(''.join(z_left))
-    # coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
-    
-    # # Right reservoir
-    # z_right = ['I']*N
-    # z_right[-1] = 'Z'
-    # pauli_im.append(''.join(z_right))
-    # coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+
+    ## I terms
+    I_str = ['I'] * N
+    pauli_im.append(''.join(I_str))
+    coeffs_im.append(gamma_L/2)
+
+    I_str = ['I'] * N
+    pauli_im.append(''.join(I_str))
+    coeffs_im.append(gamma_R/2)
+
+    ## ZZ terms Left
+    z_str = ['I']* N
+    z_str[0] = 'Z'
+    pauli_im.append(''.join(z_str))
+    coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
+
+    z_str = ['I']* N
+    z_str[n_sites] = 'Z'
+    pauli_im.append(''.join(z_str))
+    coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
+
+    ## ZZ terms Right
+    z_str = ['I']* N
+    z_str[n_sites-1] = 'Z'
+    pauli_im.append(''.join(z_str))
+    coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+
+    z_str = ['I']* N
+    z_str[N-1] = 'Z'
+    pauli_im.append(''.join(z_str))
+    coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+
+
 
     return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
     

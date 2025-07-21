@@ -50,14 +50,16 @@ def output_results(vqte_results, exact_diag_results, time, nt):
 
     # Plot Exact Diagonalization Results
     # Ensure the time axis slice matches the length of the results data
-    
-    for site_idx in range(len(exact_diag_results)):
-        num_points = len(exact_diag_results[site_idx])
-        plt.plot(time_axis[:num_points], 
-                 exact_diag_results[site_idx], 
-                 label=f'Exact Diag Site {site_idx+1} Occupation', 
-                 marker='', 
-                 linestyle='dashed')
+    try:
+        for site_idx in range(len(exact_diag_results)):
+            num_points = len(exact_diag_results[site_idx])
+            plt.plot(time_axis[:num_points], 
+                    exact_diag_results[site_idx], 
+                    label=f'Exact Diag Site {site_idx+1} Occupation', 
+                    marker='', 
+                    linestyle='dashed')
+    except Exception as e:
+        print("Can't do it")
 
     # Plot VQTE Results
     # Ensure the time axis slice matches the length of the results data
