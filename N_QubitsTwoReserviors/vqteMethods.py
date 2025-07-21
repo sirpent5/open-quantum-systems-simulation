@@ -16,7 +16,7 @@ def jordan_wigner_string(site, n_sites):
     return 'Z' * site
 
         
-def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
+def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     """
     Returns H_re and H_im for a fermionic chain (1 qubit per site, no spin).
     
@@ -35,8 +35,12 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
     pauli_im, coeffs_im = [], []
 
     # ===== Real Part (H_re) =====
-    #I like this 
+
     N = 2 * n_sites
+    
+
+    # Onsite energies
+
     eps_index = 0
     for i in range(n_sites):
   
@@ -74,10 +78,26 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
     coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
 
     xy_str = ['I']* N
-    xy_str[n_sites -1] = 'X'
+    xy_str[n_sites - 1] = 'X'
     xy_str[N-1] = 'Y'
     pauli_re.append(''.join(xy_str))
     coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
+
+
+    ## Hopping terms
+
+    for i in range(n_sites - 1):
+        
+        xx_str = ['I']* N
+        xx_str[i], xx_str[i+1] = 'X', 'X'
+        pauli_re.append(''.join(xx_str))
+        coeffs_re.append(-J)
+
+        xx_str = ['I']* N
+        xx_str[n_sites+i], xx_str[n_sites+i+1] = 'X', 'X'
+        coeffs_re.append(J)
+        pauli_re.append(''.join(xx_str))
+
 
 
 
@@ -95,26 +115,16 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
     pauli_im.append(''.join(yx_str))
     coeffs_im.append(gamma_L/4)
 
-    xx_str = ['I']* N
-    xx_str[n_sites-1] = 'X'
-    xx_str[N-1] = 'X'
-    pauli_im.append(''.join(xx_str))
-    coeffs_im.append(-gamma_R/4)
-
-    yx_str = ['I']* N
-    yx_str[n_sites - 1] = 'Y'
-    yx_str[N-1] = 'X'
-    pauli_im.append(''.join(yx_str))
-    coeffs_im.append(gamma_R/4)
+    yy_str = ['I']* N
+    yy_str[0] = 'Y'
+    yy_str[n_sites]= 'Y'
+    pauli_im.append(''.join(yy_str))
+    coeffs_im.append(0.25*gamma_L)
 
     ## I terms
     I_str = ['I'] * N
     pauli_im.append(''.join(I_str))
     coeffs_im.append(gamma_L/2)
-
-    I_str = ['I'] * N
-    pauli_im.append(''.join(I_str))
-    coeffs_im.append(gamma_R/2)
 
     ## ZZ terms Left
     z_str = ['I']* N
@@ -127,6 +137,25 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
     pauli_im.append(''.join(z_str))
     coeffs_im.append(-0.25*gamma_L*(1-2*F_L))
 
+    ## Right reservior imaginary terms
+
+    xx_str = ['I']* N
+    xx_str[n_sites-1] = 'X'
+    xx_str[N-1] = 'X'
+    pauli_im.append(''.join(xx_str))
+    coeffs_im.append(-gamma_R/4)
+
+    yx_str = ['I']* N
+    yx_str[n_sites - 1] = 'Y'
+    yx_str[N-1] = 'X'
+    pauli_im.append(''.join(yx_str))
+    coeffs_im.append(gamma_R/4)
+
+
+    I_str = ['I'] * N
+    pauli_im.append(''.join(I_str))
+    coeffs_im.append(gamma_R/2)
+
     ## ZZ terms Right
     z_str = ['I']* N
     z_str[n_sites-1] = 'Z'
@@ -137,6 +166,13 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, t):
     z_str[N-1] = 'Z'
     pauli_im.append(''.join(z_str))
     coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
+
+
+    yy_str = ['I']* N
+    yy_str[n_sites-1] = 'Y'
+    yy_str[N-1]= 'Y'
+    pauli_im.append(''.join(yy_str))
+    coeffs_im.append(0.25*gamma_R)
 
 
 

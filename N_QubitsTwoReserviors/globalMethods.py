@@ -19,7 +19,7 @@ def verify_density_matrix(rho):
 
 def build_initial_states(ham_real):
 
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 1)
+    ansatz = EfficientSU2(ham_real.num_qubits, reps = 2)
     N = int(ham_real.num_qubits)
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
@@ -50,6 +50,16 @@ def output_results(vqte_results, exact_diag_results, time, nt):
 
     # Plot Exact Diagonalization Results
     # Ensure the time axis slice matches the length of the results data
+    for site_idx in range(len(vqte_results)):
+        num_points = len(vqte_results[site_idx])
+        plt.plot(time_axis[:num_points], 
+                    vqte_results[site_idx], 
+                    label=f'VQTE Site {site_idx+1} Occupation', 
+                    marker='', 
+                    linestyle='solid')
+
+
+
     try:
         for site_idx in range(len(exact_diag_results)):
             num_points = len(exact_diag_results[site_idx])
@@ -63,14 +73,7 @@ def output_results(vqte_results, exact_diag_results, time, nt):
 
     # Plot VQTE Results
     # Ensure the time axis slice matches the length of the results data
-    for site_idx in range(len(vqte_results)):
-        num_points = len(vqte_results[site_idx])
-        plt.plot(time_axis[:num_points], 
-                 vqte_results[site_idx], 
-                 label=f'VQTE Site {site_idx+1} Occupation', 
-                 marker='', 
-                 linestyle='solid')
-
+  
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
