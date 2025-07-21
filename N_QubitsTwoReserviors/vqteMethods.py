@@ -95,8 +95,18 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
 
         xx_str = ['I']* N
         xx_str[n_sites+i], xx_str[n_sites+i+1] = 'X', 'X'
-        coeffs_re.append(J)
+        coeffs_re.append(-J)
         pauli_re.append(''.join(xx_str))
+
+        yy_str = ['I']* N
+        yy_str[i], yy_str[i+1] = 'Y', 'Y'
+        pauli_re.append(''.join(yy_str))
+        coeffs_re.append(-J)
+
+        yy_str = ['I']* N
+        yy_str[n_sites+i], yy_str[n_sites+i+1] = 'Y', 'Y'
+        coeffs_re.append(-J)
+        pauli_re.append(''.join(yy_str))
 
 
 
@@ -108,12 +118,6 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     xx_str[n_sites] = 'X'
     pauli_im.append(''.join(xx_str))
     coeffs_im.append(-gamma_L/4)
-
-    yx_str = ['I']* N
-    yx_str[0] = 'Y'
-    yx_str[n_sites] = 'X'
-    pauli_im.append(''.join(yx_str))
-    coeffs_im.append(gamma_L/4)
 
     yy_str = ['I']* N
     yy_str[0] = 'Y'
@@ -139,19 +143,15 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
 
     ## Right reservior imaginary terms
 
+    ##XX term right
     xx_str = ['I']* N
     xx_str[n_sites-1] = 'X'
     xx_str[N-1] = 'X'
     pauli_im.append(''.join(xx_str))
     coeffs_im.append(-gamma_R/4)
 
-    yx_str = ['I']* N
-    yx_str[n_sites - 1] = 'Y'
-    yx_str[N-1] = 'X'
-    pauli_im.append(''.join(yx_str))
-    coeffs_im.append(gamma_R/4)
 
-
+    ##II term Right
     I_str = ['I'] * N
     pauli_im.append(''.join(I_str))
     coeffs_im.append(gamma_R/2)
@@ -167,6 +167,7 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     pauli_im.append(''.join(z_str))
     coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
 
+    ##YY Terms Right
 
     yy_str = ['I']* N
     yy_str[n_sites-1] = 'Y'
