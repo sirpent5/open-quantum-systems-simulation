@@ -60,8 +60,9 @@ def build_initial_states(ham_real):
 
     # Set all params to 2π initially
     for i in range(len(ansatz.parameters)):
-        init_param_values[ansatz.parameters[i]] = (
-        2*np.pi)
+        # init_param_values[ansatz.parameters[i]] = (
+        # 2*np.pi)
+        init_param_values[ansatz.parameters[i]] = np.sin(i) + np.pi/4
       
     # Assign params to the ansatz
     vqte_init_state = Statevector(ansatz.assign_parameters(init_param_values))
