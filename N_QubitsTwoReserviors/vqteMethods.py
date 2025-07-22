@@ -42,12 +42,12 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
         z_str = ['I']* N
         z_str[i] = 'Z'
         pauli_re.append(''.join(z_str))
-        coeffs_re.append(eps[eps_index]/2)
+        coeffs_re.append(eps[eps_index])
 
         z_str = ['I']* N
         z_str[i+n_sites] = 'Z'
         pauli_re.append(''.join(z_str))
-        coeffs_re.append(-eps[eps_index]/2)
+        coeffs_re.append(-eps[eps_index])
 
         eps_index += 1
 
@@ -91,11 +91,11 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
         xx_str = ['I']* N
         xx_str[n_sites+i], xx_str[n_sites+i+1] = 'X', 'X'
         pauli_re.append(''.join(xx_str))
-        coeffs_re.append(-J)
+        coeffs_re.append(J)
 
         yy_str = ['I']* N
         yy_str[i], yy_str[i+1] = 'Y', 'Y'
-        coeffs_re.append(J)
+        coeffs_re.append(-J)
         pauli_re.append(''.join(yy_str))
 
         yy_str = ['I']* N
@@ -229,6 +229,9 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         initial_exp_val = np.trace(density_matrix @ op_matrix).real
     
         results_history[i].append(initial_exp_val)
+    print("Ham_real terms and coefficients:")
+    for op, coeff in zip(ham_real.paulis, ham_real.coeffs):
+        print(f"{op}: {coeff}")
 
     for t in range(nt):
         print("Step", t , "out of", nt)
@@ -266,6 +269,8 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
             exp_val = np.trace(rho_matrix @ op_matrix)/true_trace
             results_history[i].append(exp_val)
 
+    for op, coeff in zip(ham_real.paulis, ham_real.coeffs):
+        print(f"{op}: {coeff}")
     return results_history
 
 
