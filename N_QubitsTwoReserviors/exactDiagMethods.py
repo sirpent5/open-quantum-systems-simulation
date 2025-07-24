@@ -126,13 +126,11 @@ def build_number_op_list(N):
 def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
 
         # Build Lindblad operators
-        L_K = [
-            np.sqrt(gamma_L*F_L)  * Enlarge_Matrix_site_j(0, N, Sigma_minus),
+        L_K = [    np.sqrt(gamma_L*F_L)  * Enlarge_Matrix_site_j(0, N, Sigma_minus),
             np.sqrt(gamma_L*(1-F_L)) * Enlarge_Matrix_site_j(0, N, Sigma_plus),
             np.sqrt(gamma_R*(1-F_R)) * Enlarge_Matrix_site_j(N-1, N, Sigma_plus),
-            np.sqrt(gamma_R*F_R) * Enlarge_Matrix_site_j(N-1, N, Sigma_minus)
-             ]
-    
+            np.sqrt(gamma_R*F_R) * Enlarge_Matrix_site_j(N-1, N, Sigma_minus)]
+
         # Construct superoperator
         Superoperator = Liouvillian(H, L_K)
         d = len(H)
@@ -158,7 +156,7 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
 
         # # Time evolution loop
         for step in range(1, nt+1):
-            
+                print("Exact step ", step, " out of", nt)
                 rho_t = U @ rho_t
                 rho_matrix = rho_t.reshape(d, d, order='F')
                 # Store results
@@ -180,7 +178,7 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         #             exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
         #             expectation_value_history[site].append(exp_val)
 
-        return expectation_value_history
+        return expectation_value_history, Superoperator
 
 
 def build_exact_diag_hamiltonian(J, epsilon):

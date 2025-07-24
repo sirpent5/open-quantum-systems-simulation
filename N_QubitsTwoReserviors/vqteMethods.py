@@ -42,12 +42,12 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
         z_str = ['I']* N
         z_str[i] = 'Z'
         pauli_re.append(''.join(z_str))
-        coeffs_re.append(eps[eps_index])
+        coeffs_re.append(eps[eps_index]/2)
 
         z_str = ['I']* N
         z_str[i+n_sites] = 'Z'
         pauli_re.append(''.join(z_str))
-        coeffs_re.append(-eps[eps_index])
+        coeffs_re.append(-eps[eps_index]/2)
 
         eps_index += 1
 
@@ -221,6 +221,8 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     number_operators = [create_number_operator(N, i) for i in range(N)]
     results_history = [[] for _ in range(N)]
 
+    print("Oh my gosh it is starting.")
+
 
     for i, op in enumerate(number_operators):
         op_matrix = op.to_matrix()
@@ -232,6 +234,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     print("Ham_real terms and coefficients:")
     for op, coeff in zip(ham_real.paulis, ham_real.coeffs):
         print(f"{op}: {coeff}")
+    print("Oh my gosh it is starting.")
 
     for t in range(nt):
         print("Step", t , "out of", nt)
