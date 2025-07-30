@@ -53,16 +53,16 @@ def build_initial_states(ham_real):
         init_param_values : dict - Dictionary of initial parameter values for the ansatz
     """
     # Create an ansatz circut with reps
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 1)
+    ansatz = EfficientSU2(ham_real.num_qubits, reps = 5)
 
     #Initialize param dictionary
     init_param_values = {}
 
     # Set all params to 2π initially
     for i in range(len(ansatz.parameters)):
-        # init_param_values[ansatz.parameters[i]] = (
-        # 2*np.pi)
-        init_param_values[ansatz.parameters[i]] = np.sin(i) + np.pi/4
+        init_param_values[ansatz.parameters[i]] = (
+        2*np.pi)
+
       
     # Assign params to the ansatz
     vqte_init_state = Statevector(ansatz.assign_parameters(init_param_values))
@@ -77,21 +77,61 @@ def build_initial_states(ham_real):
 
     return vqte_init_state, exact_diag_initial_state, ansatz, init_param_values
 
-def output_results(vqte_results, exact_diag_results, time, nt,time_points):
 
-    # Build graph
-    plt.figure(figsize=(10, 6))
-    time_axis = np.linspace(0, time, nt+1)
- 
-    # Plot results
-    plt.plot(time_points, exact_diag_results, label='Exact Diag Result', marker='', linestyle='solid')
-    plt.plot(time_axis, vqte_results,marker='', linestyle='dashed', label='VQTE Result', color='blue')
+def output_results(
+    vqte_results, 
+    exact_diag_results, 
+    time_points, 
+    mu_left, temp_left, gamma_left, 
+    mu_right, temp_right, gamma_right
+):
+    """
+    Generates a presentation-quality plot with dynamic axes and improved legend/parameter positioning.
+    """
+    # Use a professional style for the plot
+    plt.style.use('seaborn-v0_8-talk')
+    fig, ax = plt.subplots(figsize=(12, 7))
 
-    # Titles and finalize plot
-    plt.title("Comparison of VQTE and Exact Time Evolution for a Qubit coupled to two thermal reserviors")
-    plt.xlabel("Time (t)")
-    plt.ylabel("⟨n⟩ (Expectation Value)")
-    plt.grid(True)
-    plt.legend()
+    # Assuming VQTE results correspond to a linspace from 0 to the max time
+    time_axis_vqte = np.linspace(0, np.max(time_points), len(vqte_results))
+
+
+    ax.plot(time_points, exact_diag_results, label='Exact Diagonalization', linestyle='-', linewidth=4, color='#003594')
+    ax.plot(time_axis_vqte, vqte_results, label='VQTE', linestyle='--', linewidth=2.5, color="#FFB81C")
+
+    # --- Set titles and labels ---
+    ax.set_title("Population of a Single Qubit Coupled to Two Reservoirs", fontsize=20, pad=20)
+    ax.set_xlabel("Time (t)", fontsize=20)
+    ax.set_ylabel("$\\langle n \\rangle$", fontsize=20)
     
+    # --- Create text for reservoir parameters ---
+    params_text = (
+        f"$\\bf{{Left~Reservoir}}$\n"
+        f"$\\mu_L = {mu_left:.2f}$ | $T_L = {temp_left:.2f}$ | $\\gamma_L = {gamma_left:.2f}$\n\n"
+        f"$\\bf{{Right~Reservoir}}$\n"
+        f"$\\mu_R = {mu_right:.2f}$ | $T_R = {temp_right:.2f}$ | $\\gamma_R = {gamma_right:.2f}$"
+    )
+    
+    # Add parameters text box with light background
+    param_box = ax.text(0.97, 0.12, params_text, transform=ax.transAxes, fontsize=16,
+                       verticalalignment='bottom', horizontalalignment='right',
+                       bbox=dict(facecolor='white', edgecolor = 'white', alpha=0.8,boxstyle='round,pad=0.5'))
+    
+    # Add legend just above the parameters box
+    legend = ax.legend(fontsize=16, loc='lower right', 
+                      bbox_to_anchor=(0.97, 0.4),  # Positioned above the params box
+                      frameon=True, framealpha=0.8,
+                      facecolor='white', edgecolor='lightgray')
+    
+    # --- Finalize plot ---
+    # Dynamically set axis limits
+    x_max = np.max(time_points)
+    y_max = np.max(np.concatenate([vqte_results, exact_diag_results]))
+    
+    ax.set_xlim(0, x_max) 
+    ax.set_ylim(bottom=0, top=y_max * 1.1)
+    
+    ax.grid(False)
+    ax.tick_params(axis='both', which='major', labelsize=20)  # Adjust font size of axis numbers
+    fig.tight_layout()
     plt.show()
