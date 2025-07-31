@@ -113,12 +113,12 @@ def output_results(
     )
     
     # Add parameters text box with light background
-    param_box = ax.text(0.97, 0.12, params_text, transform=ax.transAxes, fontsize=16,
+    param_box = ax.text(0.97, 0.12, params_text, transform=ax.transAxes, fontsize=20,
                        verticalalignment='bottom', horizontalalignment='right',
                        bbox=dict(facecolor='white', edgecolor = 'white', alpha=0.8,boxstyle='round,pad=0.5'))
     
     # Add legend just above the parameters box
-    legend = ax.legend(fontsize=16, loc='lower right', 
+    legend = ax.legend(fontsize=20, loc='lower right', 
                       bbox_to_anchor=(0.97, 0.4),  # Positioned above the params box
                       frameon=True, framealpha=0.8,
                       facecolor='white', edgecolor='lightgray')
