@@ -31,7 +31,7 @@ def verify_density_matrix(rho):
 
 
 
-def build_initial_states(ham_real, reps):
+def build_initial_states(ham_real, ansatz):
 
 
     """
@@ -53,7 +53,7 @@ def build_initial_states(ham_real, reps):
         init_param_values : dict - Dictionary of initial parameter values for the ansatz
     """
     # Create an ansatz circut with reps
-    ansatz = EfficientSU2(ham_real.num_qubits, reps)
+    # ansatz = EfficientSU2(ham_real.num_qubits, reps)
 
     #Initialize param dictionary
     init_param_values = {}

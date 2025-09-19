@@ -18,8 +18,8 @@ def verify_density_matrix(rho):
     print(f"Purity (Tr(ρ²)): {purity} (should be 1 for pure state)")
 
 def build_initial_states(ham_real):
-
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 17)
+    print('gay')
+    
     N = int(ham_real.num_qubits/2)
     init_param_values = {}
     for i in range(len(ansatz.parameters)):
