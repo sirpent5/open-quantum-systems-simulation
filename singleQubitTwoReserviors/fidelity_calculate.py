@@ -43,19 +43,18 @@ def extract_density_matrix_components(vqte_list, exact_list):
     ea_list, eb_list, ec_list, ed_list = [], [], [], []
 
     for rho in vqte_list:
-        va_list.append(np.real(rho[0, 0]))
-        vb_list.append(np.real(rho[0, 1])) # Note: b and c should generally be complex conjugates
-        vc_list.append(np.real(rho[1, 0]))
-        vd_list.append(np.real(rho[1, 1]))
+        va_list.append(rho[0, 0])
+        vb_list.append(rho[0, 1]) # Note: b and c should generally be complex conjugates
+        vc_list.append(rho[1, 0])
+        vd_list.append(rho[1, 1])
         
-        va_list, vb_list, vc_list, vd_list = [], [], [], []
     
 
     for rho in exact_list:
-        ea_list.append(np.real(rho[0, 0]))
-        eb_list.append(np.real(rho[0, 1])) # Note: b and c should generally be complex conjugates
-        ec_list.append(np.real(rho[1, 0]))
-        ed_list.append(np.real(rho[1, 1]))
+        ea_list.append(rho[0, 0])
+        eb_list.append(rho[0, 1]) # Note: b and c should generally be complex conjugates
+        ec_list.append(rho[1, 0])
+        ed_list.append(rho[1, 1])
 
     return {'va': va_list, 'vb': vb_list, 'vc': vc_list, 'vd': vd_list, 'ea': ea_list, 'eb': eb_list, 'ec': ec_list, 'ed': ed_list}
 
@@ -149,10 +148,10 @@ def plot_matrix_components(all_matrix_components_by_layer, time, nt, layers):
     
 
     titles = [
-        r'Diagonal Element $\rho_{00}$ (Occupation of $\ket{0}$)',
-        r'Off-Diagonal Element $\text{Re}(\rho_{01})$',
-        r'Off-Diagonal Element $\text{Re}(\rho_{10})$', 
-        r'Diagonal Element $\rho_{11}$ (Occupation of $\ket{1}$)'
+        r'Diagonal Element 00 (Occupation of A)',
+        r'Diagonal Element 01 (Occupation of B)',
+        r'Diagonal Element 10 (Occupation of C)', 
+        r'Diagonal Element 11 (Occupation of D)',
     ]
     # Keys for extraction: VQTE (v) and Exact (e)
     component_v_keys = ['va', 'vb', 'vc', 'vd']
@@ -235,22 +234,6 @@ def plot_multiple_fidelity_vs_layers(results, time, nt):
                     marker='', 
                     linestyle='dashed')
     
-    # Loop through all results and plot each line
-    # for i, result in enumerate(all_results):
-    #     label = result['label']
-    #     layers_list = result['layers_list']
-    #     fidelity_results = result['fidelity_results']
-    #     color = colors[i % len(colors)]
-        
-    #     ax.plot(
-    #         layers_list, 
-    #         fidelity_results, 
-    #         'o-', 
-    #         linewidth=2, 
-    #         markersize=8, 
-    #         color=color,
-    #         label=label
-    #     )
     
     # Add titles, labels, and legend
     ax.set_title("Fidelity vs Ansatz Layers for Different Scenarios", fontsize=20, pad=20)
