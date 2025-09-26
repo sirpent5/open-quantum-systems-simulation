@@ -3,7 +3,7 @@ from imports import *
 from exactDiagMethods import perform_exact_diag, build_exact_diag_hamiltonian
 from globalMethods import build_initial_states
 from vqteMethods import  hamiltonian_generation, perform_vqte
-from fidelity_calculate import calculate_fidelity, plot_multiple_fidelity_vs_layers
+from fidelity_calculate import calculate_fidelity, plot_multiple_fidelity_vs_layers, plot_matrix_components,extract_density_matrix_components
 
 
 def run_multiple_layers(maxLayers):
@@ -18,11 +18,13 @@ def run_multiple_layers(maxLayers):
         'time': 4,
         'dt': 0.1,
     }
+    nt = int(params['time']/params['dt'])
     
     
     layers_list = list(range(1, maxLayers + 1))
     fidelity_results = []
     all_fidelities_over_time = []
+    all_matrix_components = []
 
     
     os.makedirs('fidelity_results', exist_ok=True)
@@ -56,25 +58,29 @@ def run_multiple_layers(maxLayers):
             ham_real, ham_imag, vqte_init_state, 
             params['dt'], nt, ansatz, init_param_values
         )
-
+        
+        components_over_time = extract_density_matrix_components(vqte_fidelity, exact_fidelity)
+        all_matrix_components.append(components_over_time)
         
         
     # Calculate fidelity over time between VQTE and exact results
-    fidelity_over_time = calculate_fidelity(vqte_results, exact_diag_results)
-    all_fidelities_over_time.append(fidelity_over_time)
+        #fidelity_over_time = calculate_fidelity(vqte_fidelity, exact_fidelity)
+        #all_fidelities_over_time.append(fidelity_over_time)
+        
 
     # Store the final fidelity value for plotting vs layers
-    final_fidelity = fidelity_over_time[-1] 
-    fidelity_results.append(final_fidelity)
-  
-    plot_data = [{
-    'label': 'Default Scenario',
-    'layers_list': layers_list,
-    'fidelity_results': fidelity_results
-    }]
-    plot_multiple_fidelity_vs_layers(plot_data)
+
+    plot_matrix_components(all_matrix_components, params['time'],nt, maxLayers)
+    # plot_data = [{
+    # 'label': 'Default Scenario',
+    # 'layers_list': layers_list,
+    # 'fidelity_results': all_fidelities_over_time
+    # # 'time' : time_points
+    # }]
+    #plot_multiple_fidelity_vs_layers(all_fidelities_over_time, params['time'], nt)
+    #plot_matrix_components(all_matrix_components, params['time'],nt)
     
-    print(fidelity_results)
+    #print(all_fidelities_over_time[-1][-1])
     
     return layers_list, fidelity_results
 
