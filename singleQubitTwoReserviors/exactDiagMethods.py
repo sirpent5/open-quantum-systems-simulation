@@ -115,6 +115,7 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
     expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
     print(f"Initial expectation value of number operator: {expectation_value_history[0]}")
     time_points = [0]
+    exact_fidelity = [initial_state]
 
     # Time evolution loop
     for step in range(1, nt + 1):
@@ -125,9 +126,10 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
+        exact_fidelity.append(rho_matrix)
         time_points.append(step * dt)
         
-    return expectation_value_history, time_points
+    return expectation_value_history, time_points, exact_fidelity
 
 
 def build_exact_diag_hamiltonian(eps):

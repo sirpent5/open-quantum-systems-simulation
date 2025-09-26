@@ -1,4 +1,3 @@
-
 import os
 from imports import *
 from exactDiagMethods import perform_exact_diag, build_exact_diag_hamiltonian
@@ -99,16 +98,16 @@ def run_multiple_layers(maxLayers):
         vqte_init_state, exact_diag_init_state, ansatz, init_param_values = build_initial_states(ham_real, ansatz)
         
         # Run simulations
-        exact_diag_results, time_points = perform_exact_diag(
+        exact_diag_results, time_points, exact_fidelity = perform_exact_diag(
             params['gamma_L'], F_L, params['gamma_R'], F_R, 
             params['dt'], nt, exact_diag_init_state, exact_diag_ham
         )
         
-        vqte_results = perform_vqte(
+        vqte_results, vqte_fidelity = perform_vqte(
             ham_real, ham_imag, vqte_init_state, 
             params['dt'], nt, ansatz, init_param_values
         )
-        all_time_fidelities = calculate_fidelity(vqte_results, exact_diag_results)
+
         
         
         # Get final values for fidelity calculation
@@ -119,10 +118,11 @@ def run_multiple_layers(maxLayers):
         final_exact_values.append(final_exact)
         
         # Calculate fidelity
-        fidelity = calculate_fidelity(final_vqte, final_exact)
+        fidelity = calculate_fidelity(vqte_fidelity, exact_fidelity)
+        print(fidelity)
         fidelity_results.append(fidelity)
         
-        print(f"Layers: {layers}, Fidelity: {fidelity:.4f}, VQTE final: {final_vqte:.4f}, Exact final: {final_exact:.4f}")
+        # print(f"Layers: {layers}, Fidelity: {fidelity:.4f}, VQTE final: {final_vqte:.4f}, Exact final: {final_exact:.4f}")
     
     # Save results
     fidelity_filename = f'fidelity_results/fidelity_vs_layers.txt'

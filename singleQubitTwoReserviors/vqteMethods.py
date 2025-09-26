@@ -57,6 +57,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     # Get initial expectation value
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
+    vqte_fidelity = [statevector_to_densitymatrix(init_state.data)]
     
 
     # --- Perform time evolution ---
@@ -94,6 +95,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         
         num_op_list.append(exp_val.real)
 
+        # Store the fidelity at this time step
+        vqte_fidelity.append(rho_matrix)
 
-
-    return num_op_list
+    return num_op_list, vqte_fidelity
