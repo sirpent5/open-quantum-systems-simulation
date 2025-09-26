@@ -91,7 +91,10 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
 
         # Extract expectation values
         true_trace = np.trace(rho_matrix)
-        exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))/ true_trace
+
+        rho_matrix /= true_trace
+
+        exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))
         
         num_op_list.append(exp_val.real)
 
