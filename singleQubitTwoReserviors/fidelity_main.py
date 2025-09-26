@@ -1,6 +1,11 @@
-import numpy as np
-import matplotlib.pyplot as plt
+
 import os
+from imports import *
+from exactDiagMethods import perform_exact_diag, build_exact_diag_hamiltonian
+from globalMethods import build_initial_states, output_results
+from vqteMethods import  hamiltonian_generation, perform_vqte
+from fidelity_calculate import calculate_fidelity, plot_multiple_fidelity_vs_layers
+
 
 def save_fidelity_results(layers_list, fidelity_results, filename):
     """Saves fidelity vs layers results to file"""
@@ -137,4 +142,4 @@ def run_multiple_layers(maxLayers):
     return layers_list, fidelity_results
 
 # Run the simulation
-layers, fidelities = run_multiple_layers()
+# layers, fidelities = run_multiple_layers()

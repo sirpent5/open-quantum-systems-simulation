@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from imports import*
 
 
-def calculateFidelity(vqte_results, exact_results):
+def calculate_fidelity(vqte_results, exact_results):
     """
     Calculate the fidelity between VQTE results and exact results.
 
