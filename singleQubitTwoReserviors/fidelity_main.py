@@ -11,7 +11,8 @@ def save_fidelity_results(layers_list, fidelity_results, filename):
     with open(filename, 'w') as f:
         f.write("Layers\tFidelity\n")
         for layers, fidelity in zip(layers_list, fidelity_results):
-            f.write(f"{layers}\t{fidelity:.6f}\n")
+                    fidelity_results.append(final_fidelity)
+
 
 def load_fidelity_results(filename):
     """Loads fidelity vs layers results from file"""
@@ -73,6 +74,7 @@ def run_multiple_layers(maxLayers):
     
     layers_list = list(range(1, maxLayers + 1))
     fidelity_results = []
+    all_fidelities_over_time = []
     final_vqte_values = []
     final_exact_values = []
     
@@ -119,8 +121,8 @@ def run_multiple_layers(maxLayers):
         
         # Calculate fidelity
         fidelity = calculate_fidelity(vqte_fidelity, exact_fidelity)
-        print(fidelity)
-        fidelity_results.append(fidelity)
+        all_fidelities_over_time.append(fidelity)
+        
         
         # print(f"Layers: {layers}, Fidelity: {fidelity:.4f}, VQTE final: {final_vqte:.4f}, Exact final: {final_exact:.4f}")
     
@@ -137,6 +139,7 @@ def run_multiple_layers(maxLayers):
     
     # Plot results
     plot_fidelity_vs_layers(layers_list, fidelity_results, params)
+    
     print(fidelity_results)
     
     return layers_list, fidelity_results
