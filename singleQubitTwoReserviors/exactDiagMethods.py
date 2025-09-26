@@ -102,8 +102,7 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
     # Construct the Liouvillian superoperator
     Superoperator = Liouvillian(H, L_K)
     
-    for thing in L_K:
-        print("Operator: ", thing )
+   
 
     # Create time evolution operator
     U = scipy.linalg.expm(Superoperator * dt)
@@ -113,7 +112,7 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
 
     # Initialize history lists
     expectation_value_history = [np.trace(numberop @ initial_state) / np.trace(initial_state)]
-    print(f"Initial expectation value of number operator: {expectation_value_history[0]}")
+  
     time_points = [0]
     exact_fidelity = [initial_state]
 
