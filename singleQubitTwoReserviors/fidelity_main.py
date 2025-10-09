@@ -3,7 +3,12 @@ from imports import *
 from exactDiagMethods import perform_exact_diag, build_exact_diag_hamiltonian
 from globalMethods import build_initial_states
 from vqteMethods import  hamiltonian_generation, perform_vqte
-from fidelity_calculate import calculate_fidelity, plot_multiple_fidelity_vs_layers, plot_matrix_components,extract_density_matrix_components
+from fidelity_calculate import (
+    calculate_fidelity,
+    plot_multiple_fidelity_vs_layers,
+    plot_matrix_components,
+    extract_density_matrix_components
+)
     
 
 
@@ -19,7 +24,7 @@ def run_multiple_layers(maxLayers,time, dt):
         'time': time,
         'dt': dt,
     }
-    nt = int(params['time']/params['dt'])
+    nt = int(time/dt)
     
     
     layers_list = list(range(1, maxLayers + 1))
@@ -50,7 +55,7 @@ def run_multiple_layers(maxLayers,time, dt):
         vqte_init_state, exact_diag_init_state, ansatz, init_param_values = build_initial_states(ham_real, ansatz)
         
         # Run simulations
-        exact_diag_results, time_points, exact_fidelity = perform_exact_diag(
+        exact_fidelity = perform_exact_diag(
             params['gamma_L'], F_L, params['gamma_R'], F_R, 
             params['dt'], nt, exact_diag_init_state, exact_diag_ham
         )
@@ -67,8 +72,8 @@ def run_multiple_layers(maxLayers,time, dt):
         components_over_time = extract_density_matrix_components(vqte_fidelity, exact_fidelity)
         all_matrix_components.append(components_over_time)
 
-    plot_matrix_components(all_matrix_components, params['time'],nt, layers)
-    plot_multiple_fidelity_vs_layers(all_fidelities_over_time, params['time'], nt)
+    plot_matrix_components(all_matrix_components, time, nt, layers)
+    plot_multiple_fidelity_vs_layers(all_fidelities_over_time, time, nt)
 
     
     return layers_list, fidelity_results

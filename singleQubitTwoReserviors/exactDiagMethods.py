@@ -128,7 +128,7 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
         exact_fidelity.append(rho_matrix)
         time_points.append(step * dt)
         
-    return expectation_value_history, time_points, exact_fidelity
+    return exact_fidelity
 
 
 def build_exact_diag_hamiltonian(eps):
