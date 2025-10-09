@@ -153,7 +153,7 @@ def plot_multiple_fidelity_vs_layers(fidelity_results, time, nt):
     ax.set_ylabel("Fidelity", fontsize=16)
     ax.tick_params(axis='both', labelsize=14)
     ax.grid(True, alpha=0.3)
-    ax.set_ylim(0, 1.05)
+    ax.set_ylim(0.95, 1.05)
     ax.legend(title='Number of Layers', fontsize=12)
     
     plt.tight_layout()

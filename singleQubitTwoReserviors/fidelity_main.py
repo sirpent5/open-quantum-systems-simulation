@@ -67,12 +67,15 @@ def run_multiple_layers(maxLayers,time, dt):
         
         
         fidelities = calculate_fidelity(vqte_fidelity, exact_fidelity)
+        
         all_fidelities_over_time.append(fidelities)
+        
+        print(f"Fidelities for {layers} layers:", fidelities)
         
         components_over_time = extract_density_matrix_components(vqte_fidelity, exact_fidelity)
         all_matrix_components.append(components_over_time)
 
-    plot_matrix_components(all_matrix_components, time, nt, layers)
+    plot_matrix_components(all_matrix_components, time, nt, layers_list)
     plot_multiple_fidelity_vs_layers(all_fidelities_over_time, time, nt)
 
     
