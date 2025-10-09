@@ -160,7 +160,7 @@ def plot_multiple_fidelity_vs_layers(results, time, nt):
     ax.set_ylabel("Fidelity", fontsize=16)
     ax.tick_params(axis='both', labelsize=14)
     ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
-    # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
 
     ax.set_xlim(0, len(results))
@@ -170,7 +170,7 @@ def plot_multiple_fidelity_vs_layers(results, time, nt):
     # Only show legend if there are multiple scenarios
 
     ax.grid(True, alpha=0.3)
-    ax.set_ylim(0, 1.05)
+    ax.set_ylim(0.7, 1.0)
     
     plt.tight_layout()
     plt.show()

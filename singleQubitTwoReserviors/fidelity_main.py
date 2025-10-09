@@ -16,7 +16,7 @@ def run_multiple_layers(maxLayers):
         'T_L': 1,
         'T_R': 1,
         'time': 4,
-        'dt': 0.5,
+        'dt': 0.3,
     }
     nt = int(params['time']/params['dt'])
     
