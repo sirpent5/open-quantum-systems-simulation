@@ -95,10 +95,10 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         rho_matrix /= true_trace
 
         exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))
-        
+        rho_matrix /= true_trace
         num_op_list.append(exp_val.real)
 
         # Store the fidelity at this time step
         vqte_fidelity.append(rho_matrix)
 
-    return num_op_list, vqte_fidelity
+    return vqte_fidelity

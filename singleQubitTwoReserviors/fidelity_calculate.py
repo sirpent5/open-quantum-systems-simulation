@@ -175,16 +175,3 @@ def plot_multiple_fidelity_vs_layers(fidelity_results):
     plt.show()
 
 
-def calculate_average_fidelity(fidelities_over_time):
-    """
-    Calculates the average fidelity over all time steps.
-
-    Parameters:
-    fidelities_over_time (list of float): List of fidelity values at each time step.
-
-    Returns:
-    float: The average fidelity.
-    """
-
-    # Use np.mean for easy calculation of the average
-    return np.mean(fidelities_over_time)

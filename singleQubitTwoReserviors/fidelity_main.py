@@ -3,7 +3,7 @@ from imports import *
 from exactDiagMethods import perform_exact_diag, build_exact_diag_hamiltonian
 from globalMethods import build_initial_states
 from vqteMethods import  hamiltonian_generation, perform_vqte
-from fidelity_calculate import calculate_fidelity, plot_multiple_fidelity_vs_layers, plot_matrix_components,extract_density_matrix_components, calculate_average_fidelity
+from fidelity_calculate import calculate_fidelity, plot_multiple_fidelity_vs_layers, plot_matrix_components,extract_density_matrix_components
     
 
 
@@ -55,7 +55,7 @@ def run_multiple_layers(maxLayers,time, dt):
             params['dt'], nt, exact_diag_init_state, exact_diag_ham
         )
         
-        vqte_results, vqte_fidelity = perform_vqte(
+        vqte_fidelity = perform_vqte(
             ham_real, ham_imag, vqte_init_state, 
             params['dt'], nt, ansatz, init_param_values
         )
@@ -63,25 +63,7 @@ def run_multiple_layers(maxLayers,time, dt):
         components_over_time = extract_density_matrix_components(vqte_fidelity, exact_fidelity)
         all_matrix_components.append(components_over_time)
 
-        
-    # # Calculate fidelity over time between VQTE and exact results
-    #     fidelity_over_time = calculate_fidelity(vqte_fidelity, exact_fidelity)
-    #     # all_fidelities_over_time.append(fidelity_over_time)
-    #     average_fidelity = calculate_average_fidelity(fidelity_over_time)
-    #     all_fidelities_over_time.append(average_fidelity)
-
-    # Store the final fidelity value for plotting vs layers
-
     plot_matrix_components(all_matrix_components, params['time'],nt, layers)
-    # plot_data = [{
-    # 'label': 'Default Scenario',
-    # 'layers_list': layers_list,
-    # 'fidelity_results': all_fidelities_over_time
-    # # 'time' : time_points
-    # }]
-    # plot_multiple_fidelity_vs_layers(all_fidelities_over_time)
-    #plot_matrix_components(all_matrix_components, params['time'],nt)
-    
 
     
     return layers_list, fidelity_results
