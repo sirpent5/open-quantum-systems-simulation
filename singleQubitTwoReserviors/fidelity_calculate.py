@@ -1,29 +1,26 @@
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 import matplotlib.pyplot as plt
 from imports import*
-import cirq
+
 
 
 def calculate_fidelity(vqte_results, exact_results):
     """
-    Simple fidelity calculation with error handling.
+
     """
     fidelities = []
     
     for i in range(min(len(vqte_results), len(exact_results))):
-        rho_vqte_dm = vqte_results[i], qid_shape=(2,)
-        rho_exact_dm = exact_results[i], qid_shape=(2,)
-        fidelity_value = cirq.fidelity(rho_vqte_dm, rho_exact_dm)
 
-        # rho_vqte = vqte_results[i]
-        # rho_exact = exact_results[i]
+
+        rho_vqte = vqte_results[i]
+        rho_exact = exact_results[i]
             
-      
-                        
-        # sqrt_rho_vqte = scipy.linalg.sqrtm(rho_vqte)
-        # product = sqrt_rho_vqte @ rho_exact @ sqrt_rho_vqte 
-        # sqrt_product = scipy.linalg.sqrtm(product)
-        # fidelity = np.real(np.trace(sqrt_product))**2
+        sqrt_rho_vqte = scipy.linalg.sqrtm(rho_vqte)
+        product = sqrt_rho_vqte @ rho_exact @ sqrt_rho_vqte 
+        sqrt_product = scipy.linalg.sqrtm(product)
+        fidelity_value = np.real(np.trace(sqrt_product))**2
         fidelities.append(fidelity_value)
 
     return fidelities
@@ -162,12 +159,18 @@ def plot_multiple_fidelity_vs_layers(results, time, nt):
     ax.set_xlabel("Number of Ansatz Layers", fontsize=16)
     ax.set_ylabel("Fidelity", fontsize=16)
     ax.tick_params(axis='both', labelsize=14)
-    
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
+    # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+
+    ax.set_xlim(0, len(results))
+
+    # xticks(np.arange(0, len(results), step=1))
+
     # Only show legend if there are multiple scenarios
 
-    # Final aesthetics
     ax.grid(True, alpha=0.3)
     ax.set_ylim(0, 1.05)
-    # ax.set_xlim(0.5, max(len(results)) )  # Adjust x-axis limits
+    
     plt.tight_layout()
     plt.show()

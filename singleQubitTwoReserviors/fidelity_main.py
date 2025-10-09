@@ -16,7 +16,7 @@ def run_multiple_layers(maxLayers):
         'T_L': 1,
         'T_R': 1,
         'time': 4,
-        'dt': 0.01,
+        'dt': 0.5,
     }
     nt = int(params['time']/params['dt'])
     
@@ -64,8 +64,8 @@ def run_multiple_layers(maxLayers):
         
         
     # Calculate fidelity over time between VQTE and exact results
-        #fidelity_over_time = calculate_fidelity(vqte_fidelity, exact_fidelity)
-        #all_fidelities_over_time.append(fidelity_over_time)
+        fidelity_over_time = calculate_fidelity(vqte_fidelity, exact_fidelity)
+        all_fidelities_over_time.append(fidelity_over_time)
         
 
     # Store the final fidelity value for plotting vs layers
@@ -77,7 +77,7 @@ def run_multiple_layers(maxLayers):
     # 'fidelity_results': all_fidelities_over_time
     # # 'time' : time_points
     # }]
-    #plot_multiple_fidelity_vs_layers(all_fidelities_over_time, params['time'], nt)
+    plot_multiple_fidelity_vs_layers(all_fidelities_over_time, params['time'], nt)
     #plot_matrix_components(all_matrix_components, params['time'],nt)
     
     #print(all_fidelities_over_time[-1][-1])
