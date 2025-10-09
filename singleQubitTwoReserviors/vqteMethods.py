@@ -102,3 +102,5 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         vqte_fidelity.append(rho_matrix)
 
     return vqte_fidelity
+
+
