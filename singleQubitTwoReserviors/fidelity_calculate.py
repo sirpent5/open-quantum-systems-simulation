@@ -57,6 +57,7 @@ def extract_density_matrix_components(vqte_list, exact_list):
     return {'va': va_list, 'vb': vb_list, 'vc': vc_list, 'vd': vd_list, 'ea': ea_list, 'eb': eb_list, 'ec': ec_list, 'ed': ed_list}
 
 
+
 def plot_matrix_components(all_matrix_components_by_layer, time, nt, layers):
 
     plt.style.use('seaborn-v0_8-talk')
@@ -132,46 +133,28 @@ def plot_matrix_components(all_matrix_components_by_layer, time, nt, layers):
 
     plt.tight_layout()
     plt.show()
-
-def plot_multiple_fidelity_vs_layers(fidelity_results):
-    """
-    Plots the overall average fidelity against the number of ansatz layers.
-    Assumes fidelity_results is a list of single (float) average fidelity values.
-    """
+def plot_multiple_fidelity_vs_layers(fidelity_results, time, nt):
     plt.style.use('seaborn-v0_8-talk')
     fig, ax = plt.subplots(figsize=(10, 6))
+    time_axis = np.linspace(0, time, nt + 1)
     
-    # The layers count is derived from the length of the results list
-    layers_list = list(range(1, len(fidelity_results) + 1))
+    colors = plt.cm.plasma(np.linspace(0.2, 0.9, len(fidelity_results)))
     
-    # Plot the single average fidelity value against the number of layers
-    ax.plot(layers_list, 
-            fidelity_results, 
-            label='Average Fidelity', 
-            marker='o', 
-            linestyle='-', 
-            color='#003594',
-            linewidth=2,
-            markersize=8)
+    for layer_idx, fidelities in enumerate(fidelity_results):
+        num_points = len(fidelities)
+        ax.plot(time_axis[:num_points], 
+                fidelities, 
+                label=f'{layer_idx+1} Layers', 
+                color=colors[layer_idx],
+                linewidth=2)
     
-    # Add titles, labels, and legend
-    ax.set_title("Average Fidelity vs. Ansatz Layers", fontsize=20, pad=20)
-    ax.set_xlabel("Number of Ansatz Layers (L)", fontsize=16)
-    ax.set_ylabel("Average Fidelity ($\overline{\mathcal{F}}$)", fontsize=16)
-    
+    ax.set_title("Fidelity vs Time for Different Ansatz Layers", fontsize=20, pad=20)
+    ax.set_xlabel("Time", fontsize=16)
+    ax.set_ylabel("Fidelity", fontsize=16)
     ax.tick_params(axis='both', labelsize=14)
-    ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    
-    # Ensure x-axis limits make sense for the integer layer counts
-    if len(layers_list) > 0:
-        ax.set_xlim(min(layers_list) - 0.5, max(layers_list) + 0.5)
-    
     ax.grid(True, alpha=0.3)
-    ax.set_ylim(0.9, 1.0)
-    ax.legend(loc='lower right')
+    ax.set_ylim(0, 1.05)
+    ax.legend(title='Number of Layers', fontsize=12)
     
     plt.tight_layout()
     plt.show()
-
-
