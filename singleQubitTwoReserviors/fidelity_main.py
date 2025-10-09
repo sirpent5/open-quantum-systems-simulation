@@ -1,7 +1,7 @@
 import os
 from imports import *
 from exactDiagMethods import perform_exact_diag, build_exact_diag_hamiltonian
-from globalMethods import build_initial_states
+from globalMethods import build_initial_states, output_results
 from vqteMethods import  hamiltonian_generation, perform_vqte
 from fidelity_calculate import (
     calculate_fidelity,
@@ -56,12 +56,12 @@ def run_multiple_layers(maxLayers,time, dt):
         vqte_init_state, exact_diag_init_state, ansatz, init_param_values = build_initial_states(ham_real, ansatz)
         
         # Run simulations
-        exact_fidelity = perform_exact_diag(
+        exact_results, time_points,exact_fidelity = perform_exact_diag(
             params['gamma_L'], F_L, params['gamma_R'], F_R, 
             params['dt'], nt, exact_diag_init_state, exact_diag_ham
         )
         
-        vqte_fidelity = perform_vqte(
+        vqte_results, vqte_fidelity = perform_vqte(
             ham_real, ham_imag, vqte_init_state, 
             params['dt'], nt, ansatz, init_param_values
         )
@@ -79,5 +79,10 @@ def run_multiple_layers(maxLayers,time, dt):
     plot_matrix_components(all_matrix_components, time, nt, layers_list)
     plot_multiple_fidelity_vs_layers(all_fidelities_over_time, time, nt)
 
-    
+    output_results(vqte_results, 
+    exact_results, 
+    time_points, 
+    params['mu_L'], params['T_L'], params['gamma_L'], 
+    params['mu_R'], params['T_R'], params['gamma_R']
+    )
     return layers_list, fidelity_results
