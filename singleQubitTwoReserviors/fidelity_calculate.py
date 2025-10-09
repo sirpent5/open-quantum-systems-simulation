@@ -7,7 +7,6 @@ from imports import*
 
 def calculate_fidelity(vqte_results, exact_results):
     """
-
     """
     fidelities = []
     
@@ -96,7 +95,7 @@ def plot_matrix_components(all_matrix_components_by_layer, time, nt, layers):
             num_points = len(component_data)
             ax.plot(time_axis[:num_points], 
                     component_data, 
-                    label=f'VQTE, {i} Layers', 
+                    label=f'VQTE, {i+1} Layers', 
                     color=vqte_colors[i],
                     linestyle='-',
                     linewidth=2,
@@ -134,43 +133,58 @@ def plot_matrix_components(all_matrix_components_by_layer, time, nt, layers):
     plt.tight_layout()
     plt.show()
 
-
-def plot_multiple_fidelity_vs_layers(results, time, nt):
-
+def plot_multiple_fidelity_vs_layers(fidelity_results):
+    """
+    Plots the overall average fidelity against the number of ansatz layers.
+    Assumes fidelity_results is a list of single (float) average fidelity values.
+    """
     plt.style.use('seaborn-v0_8-talk')
     fig, ax = plt.subplots(figsize=(10, 6))
-    time_axis = np.linspace(0, time, nt + 1)
-    # Define a color palette
-    colors = ['#003594', '#940000', '#009435', '#946C00', '#6C0094']
     
-    # Check if all_results is a list of dictionaries (multiple scenarios)
-    # or if it's just a single list of fidelity results (backward compatibility)
-    for layer in range(len(results)):
-            num_points = len(results[layer])
-            plt.plot(time_axis[:num_points], 
-                    results[layer], 
-                    label=f'Exact Diag Site {layer+1} Occupation', 
-                    marker='', 
-                    linestyle='dashed')
+    # The layers count is derived from the length of the results list
+    layers_list = list(range(1, len(fidelity_results) + 1))
     
+    # Plot the single average fidelity value against the number of layers
+    ax.plot(layers_list, 
+            fidelity_results, 
+            label='Average Fidelity', 
+            marker='o', 
+            linestyle='-', 
+            color='#003594',
+            linewidth=2,
+            markersize=8)
     
     # Add titles, labels, and legend
-    ax.set_title("Fidelity vs Ansatz Layers for Different Scenarios", fontsize=20, pad=20)
-    ax.set_xlabel("Number of Ansatz Layers", fontsize=16)
-    ax.set_ylabel("Fidelity", fontsize=16)
+    ax.set_title("Average Fidelity vs. Ansatz Layers", fontsize=20, pad=20)
+    ax.set_xlabel("Number of Ansatz Layers (L)", fontsize=16)
+    ax.set_ylabel("Average Fidelity ($\overline{\mathcal{F}}$)", fontsize=16)
+    
     ax.tick_params(axis='both', labelsize=14)
     ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-
-
-    ax.set_xlim(0, len(results))
-
-    # xticks(np.arange(0, len(results), step=1))
-
-    # Only show legend if there are multiple scenarios
-
+    
+    # Ensure x-axis limits make sense for the integer layer counts
+    if len(layers_list) > 0:
+        ax.set_xlim(min(layers_list) - 0.5, max(layers_list) + 0.5)
+    
     ax.grid(True, alpha=0.3)
-    ax.set_ylim(0.7, 1.0)
+    ax.set_ylim(0.9, 1.0)
+    ax.legend(loc='lower right')
     
     plt.tight_layout()
     plt.show()
+
+
+def calculate_average_fidelity(fidelities_over_time):
+    """
+    Calculates the average fidelity over all time steps.
+
+    Parameters:
+    fidelities_over_time (list of float): List of fidelity values at each time step.
+
+    Returns:
+    float: The average fidelity.
+    """
+
+    # Use np.mean for easy calculation of the average
+    return np.mean(fidelities_over_time)
