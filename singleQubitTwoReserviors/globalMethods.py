@@ -74,7 +74,7 @@ def build_initial_states(ham_real, layers):
     rho_matrix = psi_vector.reshape(2 ,2, order='F')
     exact_diag_initial_state = np.matrix(rho_matrix)
 
-    return vqte_init_state, exact_diag_initial_state, ansatz, init_param_values
+    return vqte_init_state, exact_diag_initial_state, init_param_values, ansatz
 
 def output_results(vqte_results, exact_diag_results, time, nt,time_points):
 

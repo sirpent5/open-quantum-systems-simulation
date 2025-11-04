@@ -62,7 +62,7 @@ def run_multiple_layers(maxLayers,time, dt):
 
         print('Number of layers', layers)
         # Build initial states with specified number of layers
-        vqte_init_state, exact_diag_init_state, init_param_values = build_initial_states(ham_real, layers)
+        vqte_init_state, exact_diag_init_state, init_param_values, ansatz = build_initial_states(ham_real, layers)
         
         # Run simulations
         exact_results, time_points,exact_fidelity = perform_exact_diag(
