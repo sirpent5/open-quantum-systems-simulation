@@ -50,6 +50,7 @@ def run_multiple_layers(maxLayers,time, dt):
 
     layers_list = list(range(1, maxLayers + 1))
     layers_fidelity = []
+    all_matrix_components = []
  
 
     for layers in layers_list:
