@@ -133,6 +133,9 @@ def plot_matrix_components(all_matrix_components_by_layer, time, nt, layers):
 
     plt.tight_layout()
     plt.show()
+    
+    
+    
 def plot_multiple_fidelity_vs_layers(fidelity_results, time, nt):
     plt.style.use('seaborn-v0_8-talk')
     fig, ax = plt.subplots(figsize=(10, 6))
