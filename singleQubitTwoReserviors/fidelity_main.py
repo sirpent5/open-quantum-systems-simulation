@@ -76,7 +76,7 @@ def run_multiple_layers(maxLayers,time, dt):
             params['dt'], nt, ansatz, init_param_values
         )
         
-        
+        output_results(vqte_results, exact_results, time, nt, time_points)
         fidelities = calculate_fidelity(vqte_fidelity, exact_fidelity)
         
         layers_fidelity.append(fidelities)
@@ -88,7 +88,7 @@ def run_multiple_layers(maxLayers,time, dt):
 
     plot_multiple_fidelity_vs_layers(layers_fidelity, time, nt)
 
-
+    
     # return layers_list, fidelity_results
 
 
