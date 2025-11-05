@@ -20,7 +20,7 @@ def calculate_fidelity(vqte_results, exact_results):
         product = sqrt_rho_vqte @ rho_exact @ sqrt_rho_vqte 
         sqrt_product = scipy.linalg.sqrtm(product)
         fidelity_value = np.real(np.trace(sqrt_product))**2
-        fidelities.append(fidelity_value)
+        fidelities.append(1-fidelity_value)
 
     return fidelities
 
@@ -156,7 +156,7 @@ def plot_multiple_fidelity_vs_layers(fidelity_results, time, nt):
     ax.set_ylabel("Fidelity", fontsize=16)
     ax.tick_params(axis='both', labelsize=14)
     ax.grid(True, alpha=0.3)
-    ax.set_ylim(0.98, 1.001)
+    # ax.set_ylim(0.0, 0.05)
     ax.legend(title='Number of Layers', fontsize=12)
     
     plt.tight_layout()

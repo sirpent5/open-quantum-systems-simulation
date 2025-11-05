@@ -27,14 +27,14 @@ from fidelity_calculate import *
 
 def run_multiple_layers(maxLayers,time, dt):
     params = {
-        'gamma_L': 2.0,
-        'gamma_R': 2.0,
+        'gamma_L': 1.0,
+        'gamma_R': 0.0,
         'eps': 1.0,
-        'mu_L': 1.5,
-        'mu_R': 3,
+        'mu_L': 1,
+        'mu_R': 1,
         
-        'T_L': 1,
-        'T_R': 1,
+        'T_L': 10,
+        'T_R': 10,
         'time': time,
         'dt': dt,
     }
