@@ -150,44 +150,18 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
         for site in range(N):
             expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
 
-<<<<<<< HEAD
-        # # Time evolution loop
-=======
         
         # Time evolution loop
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
         for step in range(1, nt+1):
                 print("Exact step ", step, " out of", nt)
                 rho_t = U @ rho_t
                 rho_matrix = rho_t.reshape(d, d, order='F')
                 # Store results
-<<<<<<< HEAD
-   
-                rho_matrix = rho_matrix / np.trace(rho_matrix)
-
-                for site in range(N):
-                    exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
-                    expectation_value_history[site].append(exp_val)
-
-        # for step in range(1, nt+1):
-        #         rho_t = U @ rho_t
-        #         rho_matrix = rho_t.reshape(d, d, order='F')
-        #         # Store results
-   
-          
-
-        #         for site in range(N):
-        #             exp_val = np.real(np.trace(number_ops[site] @ rho_matrix))
-        #             expectation_value_history[site].append(exp_val)
-
-        return expectation_value_history, Superoperator
-=======
                 for site in range(N):
                     expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
 
                 
-        return expectation_value_history, np.array(time_points)
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
+        return expectation_value_history
 
 
 def build_exact_diag_hamiltonian(J, epsilon):
@@ -207,4 +181,3 @@ def build_exact_diag_hamiltonian(J, epsilon):
         H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_x, Sigma_x)
         H += J*Correlation_Matrix_i_Matrix_j(j,j+1,N, Sigma_y, Sigma_y) 
     return H
-
