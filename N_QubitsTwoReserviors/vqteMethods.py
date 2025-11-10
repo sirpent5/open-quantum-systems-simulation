@@ -279,7 +279,6 @@ def statevector_to_densitymatrix(v):
     m = int(np.sqrt(len(v)))
     return np.reshape(v, (m, m), order='F')
 
-
 def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_values):
     """
     Performs the VQTE simulation with corrected calculations.
@@ -294,10 +293,11 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     # Get initial expectation value
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
-    
+    vqte_fidelity = [statevector_to_densitymatrix(init_state.data)]
 
     # --- Perform time evolution ---
     for t in range(nt):
+      
         print("Step", t , "out of", nt)
         # Real evolution
         evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
@@ -318,7 +318,6 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         init_param_values = evolution_result_im.parameter_values[-1]
 
          # Normalized so the trace is always 1
-        
         final_psi_normalized = Statevector(ansatz.assign_parameters(init_param_values))
         
         # Create the physically correct, unnormalized density matrix by scaling with the tracked norm
@@ -327,10 +326,15 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
 
         # Extract expectation values
         true_trace = np.trace(rho_matrix)
-        exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))/ true_trace
+       
+        
+        rho_matrix /= true_trace
+
+        exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))
+        
         
         num_op_list.append(exp_val.real)
-
+        vqte_fidelity.append(rho_matrix)
 
 
     return num_op_list
