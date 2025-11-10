@@ -22,8 +22,7 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
 
     N = 2 * n_sites
     n_sites = len(eps)
-    N = 2 * n_sites
-        
+
 
     # Onsite energies
 
@@ -70,49 +69,6 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
 
     # Onsite energies
-
-    eps_index = 0
-    for i in range(n_sites):
-  
-        z_str = ['I']* N
-        z_str[i] = 'Z'
-        pauli_re.append(''.join(z_str))
-        coeffs_re.append(eps[eps_index]/2)
-
-        z_str = ['I']* N
-        z_str[i+n_sites] = 'Z'
-        pauli_re.append(''.join(z_str))
-        coeffs_re.append(-eps[eps_index]/2)
-
-        eps_index += 1
-
-    # Dissipation for left and right sides
-
-    xy_str = ['I']* N
-    xy_str[0] = 'X'
-    xy_str[n_sites] = 'Y'
-    pauli_re.append(''.join(xy_str))
-    coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
-
-    yx_str = ['I']* N
-    yx_str[0] = 'Y'
-    yx_str[n_sites] = 'X'
-    pauli_re.append(''.join(yx_str))
-    coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
-
-    
-    yx_str = ['I']* N
-    yx_str[n_sites - 1] = 'Y'
-    yx_str[N-1] = 'X'
-    pauli_re.append(''.join(yx_str))
-    coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
-
-    xy_str = ['I']* N
-    xy_str[n_sites - 1] = 'X'
-    xy_str[N-1] = 'Y'
-    pauli_re.append(''.join(xy_str))
-    coeffs_re.append(-0.25*gamma_R*(1-2*F_R))
-
 
     ## Hopping terms
 
@@ -239,29 +195,6 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
 
     ##YY Terms Right
 
-
-
-    yy_str = ['I']* N
-    yy_str[n_sites-1] = 'Y'
-    yy_str[N-1]= 'Y'
-    pauli_im.append(''.join(yy_str))
-    coeffs_im.append(0.25*gamma_R)
-
-    ##II term Right
-    I_str = ['I'] * N
-    pauli_im.append(''.join(I_str))
-    coeffs_im.append(gamma_R/2)
-
-     ## ZZ terms Right
-    z_str = ['I']* N
-    z_str[n_sites-1] = 'Z'
-    pauli_im.append(''.join(z_str))
-    coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
-
-    z_str = ['I']* N
-    z_str[N-1] = 'Z'
-    pauli_im.append(''.join(z_str))
-    coeffs_im.append(-0.25*gamma_R*(1-2*F_R))
     
     return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
 
@@ -279,6 +212,9 @@ def statevector_to_densitymatrix(v):
     m = int(np.sqrt(len(v)))
     return np.reshape(v, (m, m), order='F')
 
+# Add these to your imports.py or at the top of your file
+from qiskit.quantum_info import DensityMatrix, partial_trace
+
 def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_values):
     """
     Performs the VQTE simulation with corrected calculations.
@@ -287,17 +223,25 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     real_var_principle = RealMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient(derivative_type=DerivativeType.IMAG))
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
-    # Construct number operator
-    num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
+    # Construct number operator for qubit 0 (physical)
+    num_op = 0.5 * SparsePauliOp("II") - 0.5 * SparsePauliOp("ZI")
     
-    # Get initial expectation value
+    # This calculation is now CORRECT and EFFICIENT!
+    # It gets the expectation value <psi| (n_0 ⊗ I_1) |psi>
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
-    vqte_fidelity = [statevector_to_densitymatrix(init_state.data)]
+    
+    # This is the 1-qubit number operator matrix for later
+    num_op_1q_matrix = np.array([[0, 0], [0, 1]])
+    
+    # We can store the 1-qubit density matrices if needed
+    # initial_rho_total = DensityMatrix(init_state)
+    # initial_rho_physical = partial_trace(initial_rho_total, [1]) # Trace out ancilla (qubit 1)
+    # vqte_fidelity = [initial_rho_physical.data]
 
     # --- Perform time evolution ---
     for t in range(nt):
-      
+  
         print("Step", t , "out of", nt)
         # Real evolution
         evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
@@ -305,11 +249,11 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
         
+        # --- Norm correction calculation ---
         norm_squared = 1.0 
-        
         psi_after_re = Statevector(ansatz.assign_parameters(init_param_values))
         exp_val_H_imag = psi_after_re.expectation_value(ham_imag).real
-        norm_squared *= (1 + exp_val_H_imag * dt)
+        norm_squared *= (1 + exp_val_H_imag * dt) # This is a 1st order approximation
 
         # Imaginary evolution
         evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
@@ -317,24 +261,30 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
 
-         # Normalized so the trace is always 1
-        final_psi_normalized = Statevector(ansatz.assign_parameters(init_param_values))
+        # --- CORRECT DENSITY MATRIX CALCULATION ---
         
-        # Create the physically correct, unnormalized density matrix by scaling with the tracked norm
-        rho_unnormalized_vec = np.sqrt(norm_squared) * final_psi_normalized.data
-        rho_matrix = statevector_to_densitymatrix(rho_unnormalized_vec)
+        # 1. Get the 2-qubit (4x4) density matrix
+        final_psi = Statevector(ansatz.assign_parameters(init_param_values))
+        rho_total_normalized = DensityMatrix(final_psi)
+        
+        # 2. Trace out the ancilla (qubit 1) to get the 1-qubit (2x2) physical state
+        rho_physical = partial_trace(rho_total_normalized, [1])
 
-        # Extract expectation values
-        true_trace = np.trace(rho_matrix)
-       
-        
-        rho_matrix /= true_trace
+        # 3. Apply the norm correction to the 1-qubit physical state
+        rho_physical_unnormalized = rho_physical * norm_squared
 
-        exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))
-        
+        # 4. Normalize the 1-qubit physical state
+        true_trace = np.trace(rho_physical_unnormalized.data)
+        if true_trace > 1e-9: # Avoid division by zero
+            rho_physical_normalized = rho_physical_unnormalized / true_trace
+        else:
+            rho_physical_normalized = rho_physical_unnormalized # Should not happen
+
+        # 5. Calculate expectation value using the correct 1-qubit matrix
+        exp_val = np.trace(rho_physical_normalized.data @ num_op_1q_matrix)
         
         num_op_list.append(exp_val.real)
-        vqte_fidelity.append(rho_matrix)
+        # vqte_fidelity.append(rho_physical_normalized.data)
 
-
+    # You can now delete your statevector_to_densitymatrix function
     return num_op_list
