@@ -70,10 +70,23 @@ def output_results(vqte_results, exact_diag_results, time, nt):
     """
     plt.figure(figsize=(10, 6))
     
-    # This time axis likely has nt + 1 points (e.g., 31 points)
     time_axis = np.linspace(0, time, nt + 1)
+
+    # --- START OF FIX ---
+    # Check if the results are 1D (for N=1) and wrap them in a 
+    # list to make them 2D, so the loop works correctly.
+    
+    # Check the first element. If it's a number, it's a 1D list.
+    if len(vqte_results) > 0 and isinstance(vqte_results[0], (float, np.float64)):
+        vqte_results = [vqte_results] # Wrap it
+        
+    if len(exact_diag_results) > 0 and isinstance(exact_diag_results[0], (float, np.float64)):
+        exact_diag_results = [exact_diag_results] # Wrap it
+    # --- END OF FIX ---
+
+
     # Plot Exact Diagonalization Results
-    # Ensure the time axis slice matches the length of the results data
+    # This loop will now work for both N=1 and N>1
     for site_idx in range(len(exact_diag_results)):
         num_points = len(exact_diag_results[site_idx])
         plt.plot(time_axis[:num_points], 
@@ -83,7 +96,7 @@ def output_results(vqte_results, exact_diag_results, time, nt):
                  linestyle='dashed')
 
     # Plot VQTE Results
-    # Ensure the time axis slice matches the length of the results data
+    # This loop will now work for both N=1 and N>1
     for site_idx in range(len(vqte_results)):
         num_points = len(vqte_results[site_idx])
         plt.plot(time_axis[:num_points], 
@@ -91,27 +104,10 @@ def output_results(vqte_results, exact_diag_results, time, nt):
                  label=f'VQTE Site {site_idx} Occupation', 
                  marker='', 
                  linestyle='solid')
-
-
-
-    try:
-        for site_idx in range(len(exact_diag_results)):
-            num_points = len(exact_diag_results[site_idx])
-            plt.plot(time_axis[:num_points], 
-                    exact_diag_results[site_idx], 
-                    label=f'Exact Diag Site {site_idx+1} Occupation', 
-                    marker='', 
-                    linestyle='dashed')
-    except Exception as e:
-        plt.plot(time_axis, exact_diag_results, label='Exact Classical Solution', marker='', linestyle='solid')
-
-    # Plot VQTE Results
-    # Ensure the time axis slice matches the length of the results data
-  
+ 
     plt.title("Comparison of VQTE and Exact Time Evolution")
     plt.xlabel("Time (t)")
     plt.ylabel("⟨n⟩ (Expectation Value)")
     plt.grid(True)
     plt.legend()
-    
     plt.show()
