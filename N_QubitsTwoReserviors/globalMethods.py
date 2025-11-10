@@ -18,6 +18,7 @@ def verify_density_matrix(rho):
     print(f"Purity (Tr(ρ²)): {purity} (should be 1 for pure state)")
 
 def build_initial_states(ham_real):
+<<<<<<< HEAD
     print('gay')
     
     N = int(ham_real.num_qubits/2)
@@ -29,19 +30,60 @@ def build_initial_states(ham_real):
 
 
     init_state = Statevector(ansatz.assign_parameters(init_param_values))
+=======
+
+
+    """
+    Builds Initial States for Exact Diagonalization and VQTE simulations.
+>>>>>>> 97a898183cba75d929346badab5404ac13f61fac
     
-    psi_vector = init_state.data
+    This function creates:
+    1. A parameterized quantum circuit (ansatz) for VQTE
+    2. Initial parameter values for the ansatz
+    3. The corresponding quantum statevector
+    4. A density matrix representation for exact diagonalization
+    
+    Inputs:
+        ham_real : The real Hamiltonian for the VQTE simulation (determines number of qubits)
+    
+    Returns:
+        init_state : Statevector - Initial quantum state for VQTE
+        initial_state : np.matrix - Density matrix representation for exact diagonalization
+        ansatz : QuantumCircuit - Parameterized circuit used for VQTE
+        init_param_values : dict - Dictionary of initial parameter values for the ansatz
+    """
+    # Create an ansatz circut with reps
+    
+    ansatz = EfficientSU2(ham_real.num_qubits, reps = 2)
 
+    #Initialize param dictionary
+    init_param_values = {}
 
+<<<<<<< HEAD
     rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
+=======
+    # Set all params to 2π initially
+    for i in range(len(ansatz.parameters)):
+        init_param_values[ansatz.parameters[i]] = (
+        2*np.pi)
+      
+    # Assign params to the ansatz
+    vqte_init_state = Statevector(ansatz.assign_parameters(init_param_values))
+    
+
+    # Copy initial state data to a vector
+    psi_vector = vqte_init_state.data
+
+    # Reshape to a matrix
+    rho_matrix = psi_vector.reshape(2 ,2, order='F')
+>>>>>>> 97a898183cba75d929346badab5404ac13f61fac
     exact_diag_initial_state = np.matrix(rho_matrix)
 
-    return init_state, exact_diag_initial_state, ansatz, init_param_values
+    return vqte_init_state, exact_diag_initial_state, ansatz, init_param_values
 
 
 
-
-def output_results(vqte_results, exact_diag_results, time, nt):
+def output_results(vqte_results, exact_diag_results, time, nt, time_points):
     """
     Plots a comparison of VQTE and exact diagonalization results.
     """
@@ -52,6 +94,7 @@ def output_results(vqte_results, exact_diag_results, time, nt):
 
     # Plot Exact Diagonalization Results
     # Ensure the time axis slice matches the length of the results data
+<<<<<<< HEAD
     for site_idx in range(len(vqte_results)):
         num_points = len(vqte_results[site_idx])
         plt.plot(time_axis[:num_points], 
@@ -59,6 +102,25 @@ def output_results(vqte_results, exact_diag_results, time, nt):
                     label=f'VQTE Site {site_idx+1} Occupation', 
                     marker='', 
                     linestyle='solid')
+=======
+    for site_idx in range(len(exact_diag_results)):
+        num_points = len(exact_diag_results[site_idx])
+        plt.plot(time_axis[:num_points], 
+                 exact_diag_results[site_idx], 
+                 label=f'Exact Diag Site {site_idx} Occupation', 
+                 marker='', 
+                 linestyle='dashed')
+
+    # Plot VQTE Results
+    # Ensure the time axis slice matches the length of the results data
+    for site_idx in range(len(vqte_results)):
+        num_points = len(vqte_results[site_idx])
+        plt.plot(time_axis[:num_points], 
+                 vqte_results[site_idx], 
+                 label=f'VQTE Site {site_idx} Occupation', 
+                 marker='', 
+                 linestyle='solid')
+>>>>>>> 97a898183cba75d929346badab5404ac13f61fac
 
 
 
