@@ -6,16 +6,12 @@ from imports import *
 import numpy as np
 from qiskit.quantum_info import SparsePauliOp
 
-<<<<<<< HEAD
 from qiskit.quantum_info import SparsePauliOp
 import numpy as np
 
 
         
 def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
-=======
-def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
     """
     Returns H_re and H_im for a fermionic chain (1 qubit per site, no spin).
     
@@ -34,10 +30,8 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
     pauli_im, coeffs_im = [], []
 
     # ===== Real Part (H_re) =====
-<<<<<<< HEAD
 
     N = 2 * n_sites
-=======
     n_sites = len(eps)
     N = 2 * n_sites
         
@@ -73,7 +67,6 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
     pauli_re.append(''.join(yx_str))
     coeffs_re.append(-0.25*gamma_L*(1-2*F_L))
 
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
     
     yx_str = ['I']* N
     yx_str[n_sites - 1] = 'Y'
@@ -89,7 +82,6 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
 
     # Onsite energies
 
-<<<<<<< HEAD
     eps_index = 0
     for i in range(n_sites):
   
@@ -168,7 +160,6 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
     pauli_im.append(''.join(xx_str))
     coeffs_im.append(-gamma_L/4)
 
-=======
     ## Hopping terms
 
     for i in range(n_sites - 1):
@@ -204,7 +195,6 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
     pauli_im.append(''.join(xx_str))
     coeffs_im.append(-gamma_L/4)
 
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
     yy_str = ['I']* N
     yy_str[0] = 'Y'
     yy_str[n_sites]= 'Y'
@@ -235,7 +225,6 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
     xx_str[N-1] = 'X'
     pauli_im.append(''.join(xx_str))
     coeffs_im.append(-gamma_R/4)
-<<<<<<< HEAD
 
     yy_str = ['I']* N
     yy_str[n_sites-1] = 'Y'
@@ -262,8 +251,6 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
     ##YY Terms Right
 
 
-=======
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
 
     yy_str = ['I']* N
     yy_str[n_sites-1] = 'Y'
@@ -276,7 +263,7 @@ def hamiltonian_generation(eps, gamma_L, gamma_R, F_L, F_R, J):
     pauli_im.append(''.join(I_str))
     coeffs_im.append(gamma_R/2)
 
-    ## ZZ terms Right
+     ## ZZ terms Right
     z_str = ['I']* N
     z_str[n_sites-1] = 'Z'
     pauli_im.append(''.join(z_str))
@@ -390,7 +377,6 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
     # Perform time evolution
     results_history = [[] for _ in range(N)]
 
-<<<<<<< HEAD
     print("Oh my gosh it is starting.")
 
 
@@ -405,13 +391,6 @@ def perform_vqte(ham_real, ham_imag, init_state,dt, nt, ansatz, init_param_value
     for op, coeff in zip(ham_real.paulis, ham_real.coeffs):
         print(f"{op}: {coeff}")
     print("Oh my gosh it is starting.")
-=======
-    print("Initial expectation values:")
-    for i, op in enumerate(number_operators):
-        initial_exp_val = init_state.expectation_value(op).real
-        results_history[i].append(initial_exp_val)
-        print(f"  Qubit {i}: {initial_exp_val:.4f}")
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
 
 
     # --- Time Evolution Loop ---
