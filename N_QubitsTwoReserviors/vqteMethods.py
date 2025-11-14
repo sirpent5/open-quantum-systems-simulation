@@ -226,22 +226,15 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     # Construct number operator for qubit 0 (physical)
     num_op = 0.5 * SparsePauliOp("II") - 0.5 * SparsePauliOp("ZI")
     
-    # This calculation is now CORRECT and EFFICIENT!
-    # It gets the expectation value <psi| (n_0 ⊗ I_1) |psi>
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
     
-    # This is the 1-qubit number operator matrix for later
-    num_op_1q_matrix = np.array([[0, 0], [0, 1]])
     
-    # We can store the 1-qubit density matrices if needed
-    # initial_rho_total = DensityMatrix(init_state)
-    # initial_rho_physical = partial_trace(initial_rho_total, [1]) # Trace out ancilla (qubit 1)
-    # vqte_fidelity = [initial_rho_physical.data]
-
     # --- Perform time evolution ---
     for t in range(nt):
   
+        
+        
         print("Step", t , "out of", nt)
         # Real evolution
         evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
@@ -249,11 +242,11 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
         
-        # --- Norm correction calculation ---
+        
         norm_squared = 1.0 
         psi_after_re = Statevector(ansatz.assign_parameters(init_param_values))
         exp_val_H_imag = psi_after_re.expectation_value(ham_imag).real
-        norm_squared *= (1 + exp_val_H_imag * dt) # This is a 1st order approximation
+        norm_squared *= (1 + exp_val_H_imag * dt) 
 
         # Imaginary evolution
         evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
@@ -261,7 +254,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
 
-        # --- CORRECT DENSITY MATRIX CALCULATION ---
+  
         
         # 1. Get the 2-qubit (4x4) density matrix
         final_psi = Statevector(ansatz.assign_parameters(init_param_values))
@@ -277,14 +270,10 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         true_trace = np.trace(rho_physical_unnormalized.data)
         if true_trace > 1e-9: # Avoid division by zero
             rho_physical_normalized = rho_physical_unnormalized / true_trace
-        else:
-            rho_physical_normalized = rho_physical_unnormalized # Should not happen
-
         # 5. Calculate expectation value using the correct 1-qubit matrix
         exp_val = np.trace(rho_physical_normalized.data @ num_op_1q_matrix)
         
         num_op_list.append(exp_val.real)
-        # vqte_fidelity.append(rho_physical_normalized.data)
 
-    # You can now delete your statevector_to_densitymatrix function
+
     return num_op_list

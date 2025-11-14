@@ -53,12 +53,8 @@ def build_initial_states(ham_real):
         init_param_values : dict - Dictionary of initial parameter values for the ansatz
     """
     # Create an ansatz circut with reps
-<<<<<<< HEAD
-    ansatz = EfficientSU2(ham_real.num_qubits, reps = 3)
-=======
     
     ansatz = EfficientSU2(ham_real.num_qubits, reps = 2)
->>>>>>> 97a898183cba75d929346badab5404ac13f61fac
 
     #Initialize param dictionary
     init_param_values = {}
