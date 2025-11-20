@@ -256,24 +256,23 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
 
   
         
-        # 1. Get the 2-qubit (4x4) density matrix
+   
         final_psi = Statevector(ansatz.assign_parameters(init_param_values))
         rho_total_normalized = DensityMatrix(final_psi)
         
-        # 2. Trace out the ancilla (qubit 1) to get the 1-qubit (2x2) physical state
+
         rho_physical = partial_trace(rho_total_normalized, [1])
 
-        # 3. Apply the norm correction to the 1-qubit physical state
+
         rho_physical_unnormalized = rho_physical * norm_squared
 
-        # 4. Normalize the 1-qubit physical state
+
         true_trace = np.trace(rho_physical_unnormalized.data)
         if true_trace > 1e-9: # Avoid division by zero
             rho_physical_normalized = rho_physical_unnormalized / true_trace
-        # 5. Calculate expectation value using the correct 1-qubit matrix
-        exp_val = np.trace(rho_physical_normalized.data @ num_op_1q_matrix)
+
+        exp_val = rho_physical_unormalized.expectation_value(num_op).real
         
         num_op_list.append(exp_val.real)
-
-
+       
     return num_op_list
