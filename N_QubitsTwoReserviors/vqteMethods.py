@@ -96,42 +96,6 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
 
 
 
-
-# ===== Imaginary Part (H_im) =====
-
-    xx_str = ['I']* N
-    xx_str[0] = 'X'
-    xx_str[n_sites] = 'X'
-    pauli_im.append(''.join(xx_str))
-    coeffs_im.append(-gamma_L/4)
-
-    ## Hopping terms
-
-    for i in range(n_sites - 1):
-        
-        xx_str = ['I']* N
-        xx_str[i], xx_str[i+1] = 'X', 'X'
-        pauli_re.append(''.join(xx_str))
-        coeffs_re.append(-J)
-
-        xx_str = ['I']* N
-        xx_str[n_sites+i], xx_str[n_sites+i+1] = 'X', 'X'
-        pauli_re.append(''.join(xx_str))
-        coeffs_re.append(J)
-
-        yy_str = ['I']* N
-        yy_str[i], yy_str[i+1] = 'Y', 'Y'
-        coeffs_re.append(-J)
-        pauli_re.append(''.join(yy_str))
-
-        yy_str = ['I']* N
-        yy_str[n_sites+i], yy_str[n_sites+i+1] = 'Y', 'Y'
-        pauli_re.append(''.join(yy_str))
-        coeffs_re.append(J)
-
-
-
-
 # ===== Imaginary Part (H_im) =====
 
     xx_str = ['I']* N
@@ -229,7 +193,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     initial_exp_val = init_state.expectation_value(num_op).real
     num_op_list = [initial_exp_val]
     
-    
+    norm_squared = 1.0
     # --- Perform time evolution ---
     for t in range(nt):
   
@@ -243,10 +207,10 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         init_param_values = evolution_result_re.parameter_values[-1]
         
         
-        norm_squared = 1.0 
+        
         psi_after_re = Statevector(ansatz.assign_parameters(init_param_values))
         exp_val_H_imag = psi_after_re.expectation_value(ham_imag).real
-        norm_squared *= (1 + exp_val_H_imag * dt) 
+        norm_squared *= (1 + 2 * exp_val_H_imag * dt)
 
         # Imaginary evolution
         evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
@@ -255,8 +219,6 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         init_param_values = evolution_result_im.parameter_values[-1]
 
   
-        
-   
         final_psi = Statevector(ansatz.assign_parameters(init_param_values))
         rho_total_normalized = DensityMatrix(final_psi)
         
@@ -271,7 +233,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         if true_trace > 1e-9: # Avoid division by zero
             rho_physical_normalized = rho_physical_unnormalized / true_trace
 
-        exp_val = rho_physical_unormalized.expectation_value(num_op).real
+        exp_val = rho_physical_unnormalized.expectation_value(num_op).real
         
         num_op_list.append(exp_val.real)
        
