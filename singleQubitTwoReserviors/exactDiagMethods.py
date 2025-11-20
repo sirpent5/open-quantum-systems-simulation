@@ -121,7 +121,6 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
         rho_t = U @ rho_t
         rho_matrix = rho_t.reshape(2, 2)
         
-        # Ensure the trace is 1 at each step to prevent numerical drift
         rho_matrix = rho_matrix / np.trace(rho_matrix)
         
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
@@ -131,20 +130,6 @@ def perform_exact_diag(gamma_L, F_L, gamma_R, F_R, dt, nt, initial_state, H):
 
 
 def build_exact_diag_hamiltonian(eps):
-
-    """
-    Constructs the Hamiltonian for exact diagonalization of a two-level system (qubit).
-    
-    The Hamiltonian represents the energy of the excited state, with:
-    H = ε|1⟩⟨1| = εσ₊σ₋
-    where |1⟩ is the excited state and ε is its energy.
-
-    Parameters:
-        eps (float): The energy splitting/level spacing between ground |0⟩ and excited |1⟩ states
-        
-    Returns:
-        numpy.ndarray: The 2×2 Hamiltonian matrix for the qubit system
-    """
 
     H = eps*Sigma_minus@Sigma_plus
     return H

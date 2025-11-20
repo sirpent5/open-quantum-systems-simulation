@@ -52,7 +52,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
     # Construct number operator
-    num_op = 0.5 * SparsePauliOp("III") - 0.5 * SparsePauliOp("IIZ")
+    num_op = 0.5 * SparsePauliOp("II") - 0.5 * SparsePauliOp("IZ")
     
     # Get initial expectation value
     initial_exp_val = init_state.expectation_value(num_op).real
