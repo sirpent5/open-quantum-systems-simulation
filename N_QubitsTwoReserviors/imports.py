@@ -9,3 +9,4 @@ from qiskit_algorithms.time_evolvers.variational import RealMcLachlanPrinciple, 
 from qiskit_algorithms import TimeEvolutionProblem, VarQRTE, VarQITE
 from qiskit_algorithms.gradients import ReverseEstimatorGradient, ReverseQGT, DerivativeType
 from qiskit.quantum_info import SparsePauliOp
+from defs import *

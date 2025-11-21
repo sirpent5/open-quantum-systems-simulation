@@ -160,7 +160,7 @@ def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     ##YY Terms Right
 
     
-    return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)), SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im))
+    return SparsePauliOp(pauli_re, coeffs=np.array(coeffs_re)).simplify(), SparsePauliOp(pauli_im, coeffs=np.array(coeffs_im)).simplify()
 
 
 def statevector_to_densitymatrix(v):
@@ -188,13 +188,14 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
     # Construct number operator for qubit 0 (physical)
-    num_op = 0.5 * SparsePauliOp("II") - 0.5 * SparsePauliOp("IZ")
+    rho_matrix = statevector_to_densitymatrix(init_state.data)
+    true_trace = np.trace(rho_matrix)
     
-    initial_exp_val = init_state.expectation_value(num_op).real
-    
+    initial_exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))/ true_trace
+        
+
     num_op_list = [initial_exp_val]
     
-    norm_squared = 1.0
     # --- Perform time evolution ---
     for t in range(nt):
     
@@ -222,21 +223,16 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
 
   
         final_psi = Statevector(ansatz.assign_parameters(init_param_values))
-        rho_total_normalized = DensityMatrix(final_psi)
+        rho = statevector_to_densitymatrix(final_psi.data)
+        true_trace = np.trace(rho)
         
-
-        rho_physical = partial_trace(rho_total_normalized, [1])
-
-
-        rho_physical_unnormalized = rho_physical * norm_squared
-
-
-        true_trace = np.trace(rho_physical_unnormalized.data)
-        if true_trace > 1e-9: # Avoid division by zero
-            rho_physical_normalized = rho_physical_unnormalized / true_trace
-
-        exp_val = rho_physical_unnormalized.expectation_value(num_op).real
+        exp_val = np.trace(rho @ np.array([[0, 0], [0, 1]])) / true_trace
+        print("Exp val at step", t, ":", exp_val)
         
         num_op_list.append(exp_val.real)
+        print(len(num_op_list))
        
+       
+    
+        
     return num_op_list

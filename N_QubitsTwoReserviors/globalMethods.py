@@ -72,10 +72,6 @@ def output_results(vqte_results, exact_diag_results, time, nt):
     
     time_axis = np.linspace(0, time, nt + 1)
 
-    # --- START OF FIX ---
-    # Check if the results are 1D (for N=1) and wrap them in a 
-    # list to make them 2D, so the loop works correctly.
-    
     # Check the first element. If it's a number, it's a 1D list.
     if len(vqte_results) > 0 and isinstance(vqte_results[0], (float, np.float64)):
         vqte_results = [vqte_results] # Wrap it
@@ -97,11 +93,12 @@ def output_results(vqte_results, exact_diag_results, time, nt):
 
     # Plot VQTE Results
     # This loop will now work for both N=1 and N>1
-    for site_idx in range(len(vqte_results)):
-        num_points = len(vqte_results[site_idx])
-        plt.plot(time_axis[:num_points], 
-                 vqte_results[site_idx], 
-                 label=f'VQTE Site {site_idx} Occupation', 
+    # for site_idx in range(len(vqte_results)):
+        # num_points = len(vqte_results[site_idx])
+    
+    plt.plot(time_axis[:num_points], 
+                 vqte_results, 
+                 label=f'VQTE Site {1} Occupation', 
                  marker='', 
                  linestyle='solid')
  
