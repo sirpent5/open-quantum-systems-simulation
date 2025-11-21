@@ -227,10 +227,12 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     num_op_list = custom_num_op(ham_real.num_qubits // 2)
     
     for site in range(len(num_op_list)):
-        initial_exp_val = np.trace(rho_matrix @ num_op_list(site))/ true_trace
         
-
-        all_site_results = [initial_exp_val]
+        initial_exp_val = np.trace(rho_matrix @ num_op_list[site])/ true_trace
+        
+        all_site_results.append([])
+        
+        all_site_results[site] = [initial_exp_val]
     
     # --- Perform time evolution ---
     for t in range(nt):
@@ -257,12 +259,12 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         true_trace = np.trace(rho)
         
         
-        for site_idx, op in enumerate(site_operators):
+        for site_idx, op in enumerate(num_op_list):
             
             # Use the @ operator as requested
-                exp_val = np.trace(rho_physical @ op)/ true_trace
+                exp_val = np.trace(rho @ op)/ true_trace
             
             # Append to the specific site's history
                 all_site_results[site_idx].append(exp_val.real)
        
-    return all_site_results
+    return all_site_results, num_op_list

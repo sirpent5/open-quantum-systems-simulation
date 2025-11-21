@@ -83,12 +83,12 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
             np.sqrt(gamma_R*F_R) * Enlarge_Matrix_site_j(N-1, N, Sigma_minus)]
 
         # Construct superoperator
-        Superoperator = Liouvillian(H, L_K)
+        superoperator = Liouvillian(H, L_K)
         d = len(H)
 
 
         # Time evolution operator
-        U = scipy.linalg.expm(Superoperator * dt)
+        U = scipy.linalg.expm(superoperator * dt)
         
         # Initialize state (column-major vectorization)
         rho_t = initial_state.reshape(d**2, 1, order='F')
@@ -112,7 +112,7 @@ def perform_exact_diag(gamma_L, F_L,gamma_R, F_R, dt, nt, initial_state, H, N):
                     expectation_value_history[site].append(np.real(np.trace(number_ops[site] @ rho_matrix)))
 
                 
-        return expectation_value_history
+        return expectation_value_history, superoperator
 
 
 def build_exact_diag_hamiltonian(J, epsilon):
