@@ -1,26 +1,32 @@
 from imports import *
 
-def custom_num_op(n_sites, site_index):
+def custom_num_op(n_sites):
     """
-    Constructs the number operator for a specific physical site in a fermionic chain.
+    Constructs the number operator matrix (n = |1><1|) for a specific site.
+    Returns a dense numpy matrix of size (2^n_sites, 2^n_sites).
+    """
+    # Define the Number operator matrix [[0, 0], [0, 1]]
+    n_op = np.array([[0, 0], [0, 1]], dtype=complex)
     
-    Args:
-        n_sites: Total number of physical sites (equals number of qubits)
-        site_index: Index of the physical site (0-based)
-        
-    """
-    op = np.array([[0, 0], [0, 1]])
+   
+    i_op = np.eye(2, dtype=complex)
+    
+    # Start with an empty operator
+    
     op_list = []
-    np.eye(n_sites)
-    
-    N = 2*n_sites
-    for i in range(n_sites):
- 
-        current_op = ['I']* N
-        current_op[i] = 'n'
-        op_list.append(current_op)
-
-
+    for site_index in range(n_sites):
+        full_op = None
+        for i in range(n_sites - 1, -1, -1):
+            if i == site_index:
+                current = n_op
+            else:
+                current = i_op
+                
+            if full_op is None:
+                full_op = current
+            else:
+                full_op = np.kron(full_op, current)
+        op_list.append(full_op)
     return op_list
 
 
@@ -216,12 +222,15 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     true_trace = np.trace(rho_matrix)
     
     
-    for site_idx in range(ham_real.num_qubits // 2):
-        currentNumOp = custom_num_op(ham_real.num_qubits // 2, site_idx)
-        initial_exp_val = np.trace(rho_matrix @ currentNumOp)/ true_trace
+    all_site_results = []
+    
+    num_op_list = custom_num_op(ham_real.num_qubits // 2)
+    
+    for site in range(len(num_op_list)):
+        initial_exp_val = np.trace(rho_matrix @ num_op_list(site))/ true_trace
         
 
-    num_op_list = [initial_exp_val]
+        all_site_results = [initial_exp_val]
     
     # --- Perform time evolution ---
     for t in range(nt):
@@ -247,10 +256,13 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         rho = statevector_to_densitymatrix(final_psi.data)
         true_trace = np.trace(rho)
         
-        exp_val = np.trace(rho @ np.array([[0, 0], [0, 1]])) / true_trace
-        print("Exp val at step", t, ":", exp_val)
         
-        num_op_list.append(exp_val.real)
-  
+        for site_idx, op in enumerate(site_operators):
+            
+            # Use the @ operator as requested
+                exp_val = np.trace(rho_physical @ op)/ true_trace
+            
+            # Append to the specific site's history
+                all_site_results[site_idx].append(exp_val.real)
        
-    return num_op_list
+    return all_site_results
