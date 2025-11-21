@@ -57,8 +57,10 @@ def build_initial_states(ham_real):
     # Copy initial state data to a vector
     psi_vector = vqte_init_state.data
 
+    N = ham_real.num_qubits // 2
+
     # Reshape to a matrix
-    rho_matrix = psi_vector.reshape(2 ,2, order='F')
+    rho_matrix = psi_vector.reshape(2**N ,2**N, order='F')
     exact_diag_initial_state = np.matrix(rho_matrix)
 
     return vqte_init_state, exact_diag_initial_state, ansatz, init_param_values

@@ -1,5 +1,29 @@
 from imports import *
 
+def custom_num_op(n_sites, site_index):
+    """
+    Constructs the number operator for a specific physical site in a fermionic chain.
+    
+    Args:
+        n_sites: Total number of physical sites (equals number of qubits)
+        site_index: Index of the physical site (0-based)
+        
+    """
+    op = np.array([[0, 0], [0, 1]])
+    op_list = []
+    np.eye(n_sites)
+    
+    N = 2*n_sites
+    for i in range(n_sites):
+ 
+        current_op = ['I']* N
+        current_op[i] = 'n'
+        op_list.append(current_op)
+
+
+    return op_list
+
+
 def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
     """
     Returns H_re and H_im for a fermionic chain (1 qubit per site, no spin).
@@ -191,7 +215,10 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     rho_matrix = statevector_to_densitymatrix(init_state.data)
     true_trace = np.trace(rho_matrix)
     
-    initial_exp_val = np.trace(rho_matrix @ np.array([[0, 0], [0, 1]]))/ true_trace
+    
+    for site_idx in range(ham_real.num_qubits // 2):
+        currentNumOp = custom_num_op(ham_real.num_qubits // 2, site_idx)
+        initial_exp_val = np.trace(rho_matrix @ currentNumOp)/ true_trace
         
 
     num_op_list = [initial_exp_val]
@@ -199,7 +226,6 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     # --- Perform time evolution ---
     for t in range(nt):
     
-        
         print("Step", t , "out of", nt)
         # Real evolution
         evolution_problem_re = TimeEvolutionProblem(ham_real, dt )
@@ -207,12 +233,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         evolution_result_re = var_qrte.evolve(evolution_problem_re)
         init_param_values = evolution_result_re.parameter_values[-1]
         
-        
-        
-        psi_after_re = Statevector(ansatz.assign_parameters(init_param_values))
-        
-        exp_val_H_imag = psi_after_re.expectation_value(ham_imag).real
-      
+ 
 
         # Imaginary evolution
         evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
@@ -230,9 +251,6 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         print("Exp val at step", t, ":", exp_val)
         
         num_op_list.append(exp_val.real)
-        print(len(num_op_list))
+  
        
-       
-    
-        
     return num_op_list
