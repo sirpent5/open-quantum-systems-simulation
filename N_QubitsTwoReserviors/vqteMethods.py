@@ -188,16 +188,16 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     imag_var_principle = ImaginaryMcLachlanPrinciple(qgt=ReverseQGT(), gradient=ReverseEstimatorGradient())
 
     # Construct number operator for qubit 0 (physical)
-    num_op = 0.5 * SparsePauliOp("II") - 0.5 * SparsePauliOp("ZI")
+    num_op = 0.5 * SparsePauliOp("II") - 0.5 * SparsePauliOp("IZ")
     
     initial_exp_val = init_state.expectation_value(num_op).real
+    
     num_op_list = [initial_exp_val]
     
     norm_squared = 1.0
     # --- Perform time evolution ---
     for t in range(nt):
-  
-        
+    
         
         print("Step", t , "out of", nt)
         # Real evolution
@@ -209,12 +209,14 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         
         
         psi_after_re = Statevector(ansatz.assign_parameters(init_param_values))
+        
         exp_val_H_imag = psi_after_re.expectation_value(ham_imag).real
-        norm_squared *= (1 + 2 * exp_val_H_imag * dt)
+      
 
         # Imaginary evolution
         evolution_problem_im = TimeEvolutionProblem(ham_imag, dt )
         var_qite = VarQITE(ansatz, init_param_values, imag_var_principle, num_timesteps=1)
+        
         evolution_result_im = var_qite.evolve(evolution_problem_im)
         init_param_values = evolution_result_im.parameter_values[-1]
 
