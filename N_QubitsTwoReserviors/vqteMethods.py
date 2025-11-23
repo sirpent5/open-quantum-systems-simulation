@@ -28,6 +28,8 @@ def custom_num_op(n_sites):
                 full_op = np.kron(full_op, current)
         op_list.append(full_op)
     return op_list
+from qiskit.quantum_info import SparsePauliOp
+import numpy as np
 
 
 def hamiltonian_generation(n_sites, eps, gamma_L, gamma_R, F_L, F_R, J):
@@ -206,8 +208,7 @@ def statevector_to_densitymatrix(v):
     m = int(np.sqrt(len(v)))
     return np.reshape(v, (m, m), order='F')
 
-# Add these to your imports.py or at the top of your file
-from qiskit.quantum_info import DensityMatrix, partial_trace
+
 
 def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_values):
     """
