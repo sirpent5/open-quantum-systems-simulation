@@ -11,6 +11,6 @@ def compare_superoperator_to_vqte(superoperator, ham_real, ham_imag):
     Returns:
         difference : array - The difference between the two matrices
     """
-    vqte_hamiltonian = ham_real.to_matrix() + 1j * ham_imag.to_matrix()
-    difference = superoperator - vqte_hamiltonian
+    vqte_hamiltonian = ham_real.to_matrix()- 1j * ham_imag.to_matrix()
+    difference = superoperator + (1j*vqte_hamiltonian)
     return difference

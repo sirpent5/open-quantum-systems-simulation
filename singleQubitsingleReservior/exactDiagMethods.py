@@ -64,7 +64,7 @@ def perform_exact_diag(gamma, F, dt, nt, initial_state, H):
         # Calulate and store new values
         expectation_value_history.append(np.trace(numberop @ rho_matrix))
         time_points.append(step * dt)
-    return expectation_value_history, time_points
+    return expectation_value_history, time_points, Superoperator
 
 
 
