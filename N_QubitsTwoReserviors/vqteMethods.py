@@ -1,18 +1,16 @@
 from imports import *
+from exactDiagMethods import *
 
 def custom_num_op(n_sites):
     """
-    Constructs the number operator matrix (n = |1><1|) for a specific site.
-    Returns a dense numpy matrix of size (2^n_sites, 2^n_sites).
+    Fix this
     """
     # Define the Number operator matrix [[0, 0], [0, 1]]
     n_op = np.array([[0, 0], [0, 1]], dtype=complex)
     
-   
+   ## Comment this more
     i_op = np.eye(2, dtype=complex)
-    
-    # Start with an empty operator
-    
+
     op_list = []
     for site_index in range(n_sites):
         full_op = None
@@ -26,8 +24,10 @@ def custom_num_op(n_sites):
                 full_op = current
             else:
                 full_op = np.kron(full_op, current)
-        op_list.append(full_op)
+        op_list.insert(0,full_op)
     return op_list
+
+
 from qiskit.quantum_info import SparsePauliOp
 import numpy as np
 
@@ -225,7 +225,7 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
     
     all_site_results = []
     
-    num_op_list = custom_num_op(ham_real.num_qubits // 2)
+    num_op_list = build_number_op_list(ham_real.num_qubits // 2)
     
     for site in range(len(num_op_list)):
         
@@ -255,16 +255,15 @@ def perform_vqte(ham_real, ham_imag, init_state, dt, nt, ansatz, init_param_valu
         init_param_values = evolution_result_im.parameter_values[-1]
 
   
-        final_psi = Statevector(ansatz.assign_parameters(init_param_values))
+        final_psi = Statevector(ansatz.assign_parameters(init_param_values)) ## Maybe move trace here
         rho = statevector_to_densitymatrix(final_psi.data)
         true_trace = np.trace(rho)
         
         
         for site_idx, op in enumerate(num_op_list):
             
-            # Use the @ operator as requested
                 exp_val = np.trace(rho @ op)/ true_trace
-            
+            ## Or redefine density matrix
             # Append to the specific site's history
                 all_site_results[site_idx].append(exp_val.real)
        
